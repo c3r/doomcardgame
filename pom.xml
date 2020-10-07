@@ -10,12 +10,12 @@
 	</parent>
 	<groupId>pl.c3r</groupId>
 	<artifactId>doomcardgame</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.1</version>
 	<name>doomcardgame</name>
 	<description>Doom - the card game</description>
 
 	<properties>
-		<java.version>11</java.version>
+		<java.version>9</java.version>
 	</properties>
 
 	<dependencies>
