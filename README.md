@@ -26,6 +26,14 @@ L | **DEAL_DMG**                    | Dealing the damage to the Victim, and goto
 
 ## REST API
 
+#### Reset the state of the game  
+Reqest: `POST` `/reset`  
+
+Example response: 
+```
+Game restarted.
+```
+
 #### Deal cards for player    
 Reqest: `POST` `/deal/playercards/{playerId}`  
 
