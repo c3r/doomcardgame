@@ -1,5 +1,6 @@
 package pl.c3r.doomcardgame.model;
 
+import lombok.val;
 import pl.c3r.doomcardgame.model.card.Card;
 
 import java.util.*;
@@ -23,8 +24,8 @@ public class Deck<T extends Card> {
         this.shuffled = new ArrayDeque<>();
         this.playedCards = new HashSet<>();
 
-        List<Integer> tmpKeys = new ArrayList<>(cards.keySet());
-        Random rand = new Random();
+        val tmpKeys = new ArrayList<>(cards.keySet());
+        val rand = new Random();
         while (!tmpKeys.isEmpty()) {
             int randIdx = rand.nextInt(tmpKeys.size());
             shuffled.add(tmpKeys.get(randIdx));
@@ -40,7 +41,7 @@ public class Deck<T extends Card> {
     }
 
     public Card dealNextCard() {
-        Integer nextCardId = shuffled.poll();
+        val nextCardId = shuffled.poll();
         return cards.get(nextCardId);
     }
 

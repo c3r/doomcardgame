@@ -1,26 +1,30 @@
 package pl.c3r.doomcardgame.model;
 
-import lombok.NoArgsConstructor;
+import lombok.val;
 import pl.c3r.doomcardgame.model.card.Card;
 import pl.c3r.doomcardgame.util.Constants;
 
-import java.util.*;
+import java.text.MessageFormat;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
-@NoArgsConstructor
 public class Player implements Creature {
 
-    protected Integer id;
-    protected String name;
-    protected Map<Integer, Card> hand;
-    private Integer baseInitiative;
-    private Integer initiativeResult;
-    private Integer baseDamage;
-    private Integer damageResult;
+    protected final Integer id;
+    protected final String name;
+    protected final CreatureState state;
+    protected final Map<Integer, Card> hand;
+    protected final Integer baseInitiative;
+    private final Integer baseDamage;
 
     public Player(Integer id, String name) {
         this.id = id;
         this.hand = new HashMap<>();
         this.name = name;
+        this.state = CreatureState.builder().hitPoints(Constants.PLAYERS_MAX_HP).build();
+        this.baseDamage = Constants.PLAYERS_BASE_DAMAGE;
         this.baseInitiative = Constants.PLAYERS_BASE_INITIATIVE;
     }
 
@@ -29,7 +33,7 @@ public class Player implements Creature {
     }
 
     public Integer getInitiative() {
-        return initiativeResult;
+        return state.getInitiative();
     }
 
     @Override
@@ -38,9 +42,7 @@ public class Player implements Creature {
     }
 
     public void addCard(Card card) {
-        if (hand.size() > 10) {
-            throw new RuntimeException("This player cannot have more than 10 cards!");
-        }
+        checkForMaxCards();
         hand.put(card.getId(), card);
     }
 
@@ -49,9 +51,20 @@ public class Player implements Creature {
         hand.remove(cardId);
     }
 
+    private void checkForMaxCards() {
+        val max = Constants.MAX_CARDS_FOR_PLAYER;
+        if (hand.size() > max) {
+            throw new RuntimeException(MessageFormat.format("This player cannot have more than {0} cards!", max));
+        }
+    }
+
     protected void checkForCard(Integer cardId) {
-        if (hand == null || hand.isEmpty()) {
-            throw new RuntimeException("Players " + id + " hand is empty!");
+        if (hand.isEmpty()) {
+            throw new RuntimeException(MessageFormat.format("Players {0} hand is empty!", id));
+        }
+
+        if (!hand.containsKey(cardId)) {
+            throw new RuntimeException(MessageFormat.format("Player {0} does not have card with id={1}", this, cardId));
         }
     }
 
@@ -66,8 +79,50 @@ public class Player implements Creature {
     }
 
     @Override
-    public void setInitiativeBonus(int bonus) {
-        initiativeResult = baseInitiative + bonus;
+    public Integer getTarget() {
+        return state.getTargetedCreatureId();
+    }
+
+    @Override
+    public boolean isDead() {
+        return !state.isAlive();
+    }
+
+    @Override
+    public void setTarget(Integer targetId) {
+        this.state.setTargetedCreatureId(targetId);
+    }
+
+    @Override
+    public void setInitiativeBonus(Integer bonus) {
+        state.setInitiative(baseInitiative + bonus);
+    }
+
+    @Override
+    public void useItem(Integer itemId) {
+        if (!hand.containsKey(itemId)) {
+            throw new RuntimeException(MessageFormat.format("Player {0} doesn't have item with id={1}", this, itemId));
+        }
+        state.setUsedItemId(itemId);
+    }
+
+    @Override
+    public void setAttack(Integer attack) {
+        state.setAttack(attack);
+    }
+
+    @Override
+    public void setDefence(Integer defence) {
+        state.setDefence(defence);
+    }
+
+    @Override
+    public void dealDamage(Integer damage) {
+
+    }
+
+    public boolean hasCards() {
+        return !this.hand.isEmpty();
     }
 
     @Override

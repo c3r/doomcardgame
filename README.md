@@ -27,12 +27,13 @@ L | **DEAL_DMG**                    | Dealing the damage to the Victim, and goto
 ## REST API
 
 #### Reset the state of the game  
-Reqest: `POST` `/reset`  
+Reqest: `GET` `/reset`  
 
 Example response: 
 ```
 Game restarted.
 ```
+`HTTP/1.1 200 OK`
 
 #### Deal cards for player    
 Reqest: `POST` `/deal/playercards/{playerId}`  
@@ -48,6 +49,8 @@ Example response:
     { "item": { "cost": 6, "name": "Medkit" }, "id": 605 }
 ]
 ```  
+`HTTP/1.1 200 OK`
+
 #### Deal cards for the Puppetmaster  
 Request: `POST` `/deal/puppetmaster`  
 Example response:
@@ -81,6 +84,7 @@ Example response:
     }
 ]
 ```
+`HTTP/1.1 200 OK`
 
 #### Check Player's cards
 Check Player's cards  
@@ -94,6 +98,7 @@ Example response:
 ```json
 [{"item":{"cost":4,"name":"Super shotgun"},"id":618},{"item":{"cost":6,"name":"Medkit"},"id":605}]
 ```
+`HTTP/1.1 200 OK`
 
 #### Check Puppetmaster's cards
 Check the Puppetmaster's cards (current hard)  
@@ -129,6 +134,7 @@ Example response:
     }
 ]
 ```
+`HTTP/1.1 200 OK`
 
 #### Deal Location Card
 Deal the location card to the table  
@@ -137,6 +143,7 @@ Example response:
 ```json
 {"location":{"name":"Room_04"},"id":107}
 ```
+`HTTP/1.1 200 OK`
 
 #### Check location card 
 Check the currently played location card laying on the table  
@@ -145,6 +152,7 @@ Example response:
 ```json
 {"location":{"name":"Room_04"},"id":107}
 ```
+`HTTP/1.1 200 OK`
 
 #### Play Monster Cards 
 Play Monster Cards from Puppetmaster's hand  
@@ -155,10 +163,8 @@ Example request:
 [ 321, 305 ]
 ```
 
-Example response:  
-```
-200 OK
-```
+Example response:    
+`HTTP/1.1 200 OK`
 
 #### Check monster cards
 Check monster cards that were played by the Puppetmaster  
@@ -195,6 +201,8 @@ Example response:
     }
 ]
 ```
+`HTTP/1.1 200 OK`
+
 #### Roll for initiative for Player
 Request: `POST` `/play/player/{playerId}/roll/initiative`
 
@@ -206,6 +214,7 @@ Example response:
 ```
 7
 ```
+`HTTP/1.1 200 OK`
 
 #### Roll for initiative for Monster
 Request: `POST` `/play/player/{monsterId}/roll/initiative`
@@ -218,5 +227,57 @@ Example response:
 ```
 11
 ```
-### TODO
-- Phases G to L (A to F are implemented).
+`HTTP/1.1 200 OK`
+
+#### Get next Creature to play
+Returns the `id` of the next creature to choose the target to attack  
+Request: `GET` `/play/next`
+
+Example response:
+```
+1
+```
+`HTTP/1.1 200 OK` 
+
+#### Choose target
+Request the target for currently playing creature  
+Request: `POST` `/play/choose_target/{targetId}`
+
+
+| Param | Description 
+| --- | ---
+| targetId | Id of the creature that will be assigned as a target for currently playing creature
+
+Example response:
+
+`HTTP/1.1 200 OK`
+
+#### Roll for attack 
+Roll the dice for the attack value for currently attacking creature  
+Request: `POST` `/play/attack`
+
+Example response:
+```
+5
+```
+`HTTP/1.1 200 OK`
+
+#### Roll for defence 
+Roll the dice for the defence value for currently attacked creature  
+Request: `POST` `/play/defend`
+
+Example response:
+```
+5
+```
+`HTTP/1.1 200 OK`
+
+#### Deal the damage
+Roll for the damage that will be dealt to the attacked creature  
+Request: `POST` `/play/deal_damage`
+
+Example response:
+```
+5
+```
+`HTTP/1.1 200 OK`

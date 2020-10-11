@@ -2,14 +2,11 @@ package pl.c3r.doomcardgame.model;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
 
+import java.text.MessageFormat;
 import java.util.HashSet;
 import java.util.Set;
 
-@EqualsAndHashCode(callSuper = true)
-@NoArgsConstructor
-@Data
 public class Puppetmaster extends Player {
 
     private Set<Integer> playedMonsters;
@@ -24,4 +21,18 @@ public class Puppetmaster extends Player {
         playedMonsters.add(cardId);
     }
 
+    public void killMonster(Integer monsterId) {
+        if (!this.playedMonsters.contains(monsterId)) {
+            throw new RuntimeException(MessageFormat.format("Puppetmaster doesn't played monster with id={0}", monsterId));
+        }
+        this.playedMonsters.remove(monsterId);
+    }
+
+    public boolean allMonstersDead() {
+        return this.playedMonsters.isEmpty();
+    }
+
+    public Set<Integer> getPlayedMonsters() {
+        return playedMonsters;
+    }
 }

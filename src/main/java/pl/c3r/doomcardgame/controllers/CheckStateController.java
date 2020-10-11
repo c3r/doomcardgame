@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import pl.c3r.doomcardgame.model.Creature;
 import pl.c3r.doomcardgame.model.card.Card;
 import pl.c3r.doomcardgame.model.card.MonsterCard;
 import pl.c3r.doomcardgame.util.DoomFSM;
@@ -51,6 +52,22 @@ public class CheckStateController {
         game.checkForMinState(DoomFSM.State.ROLL_DICE_FOR_INITIATIVE);
         Set<MonsterCard> playedMonsters = game.getPlayedMonsters();
         return ResponseEntity.ok(playedMonsters);
+    }
+
+    @GetMapping("/attacker")
+    @ResponseBody
+    public ResponseEntity<Creature> getCurrentAttacker() {
+        game.checkForMinState(DoomFSM.State.ATT_CHOOSE_TARGET);
+        Creature attacker = game.getCurrentAttacker();
+        return ResponseEntity.ok(attacker);
+    }
+
+    @GetMapping("/defender")
+    @ResponseBody
+    public ResponseEntity<Creature> getCurrentDefender() {
+        game.checkForMinState(DoomFSM.State.ATT_CHOOSE_TARGET);
+        Creature defender = game.getCurrentDefender();
+        return ResponseEntity.ok(defender);
     }
 
     @ExceptionHandler({ RuntimeException.class, Exception.class })

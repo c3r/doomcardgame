@@ -5,7 +5,14 @@ public interface Creature {
     String getName();
     Integer getId();
     CreatureType getType();
-    void setInitiativeBonus(int bonus);
+    Integer getTarget();
+    boolean isDead();
+    void setTarget(Integer targetId);
+    void setInitiativeBonus(Integer bonus);
+    void useItem(Integer itemId);
+    void setAttack(Integer attack);
+    void setDefence(Integer defence);
+    void dealDamage(Integer damage);
 
     enum CreatureType {
         MONSTER, PLAYER;

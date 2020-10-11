@@ -2,12 +2,11 @@ package pl.c3r.doomcardgame.model.card;
 
 import lombok.Builder;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-import pl.c3r.doomcardgame.service.CardDeck;
+import pl.c3r.doomcardgame.service.GameDeck;
 
 @Data
 @Builder
 public class LocationCard implements Card {
-    private CardDeck.Location location;
+    private GameDeck.Location location;
     private Integer id;
 }

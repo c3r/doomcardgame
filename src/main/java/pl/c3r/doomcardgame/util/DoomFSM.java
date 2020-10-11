@@ -1,5 +1,6 @@
 package pl.c3r.doomcardgame.util;
 
+import lombok.val;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -34,10 +35,10 @@ public class DoomFSM {
         ROLL_DICE_FOR_INITIATIVE,
         ATT_CHOOSE_TARGET,
         ATT_USE_ITEMS,
-        DEF_USE_ITEMS,
-        ATT_ROLL,
-        DEF_ROLL,
-        DEAL_DMG;
+//        DEF_USE_ITEMS, TODO: Dont know yet if we want to have this
+        ATTACK_ROLL,
+        DEFENCE_ROLL,
+        DAMAGE_ROLL;
 
         static {
             State.INIT.setNextState(State.DEAL_TO_PLAYERS);
@@ -46,10 +47,11 @@ public class DoomFSM {
             State.PM_PLAY_MONSTERS.setNextState(State.ROLL_DICE_FOR_INITIATIVE);
             State.ROLL_DICE_FOR_INITIATIVE.setNextState(State.ATT_CHOOSE_TARGET);
             State.ATT_CHOOSE_TARGET.setNextState(State.ATT_USE_ITEMS);
-            State.ATT_USE_ITEMS.setNextState(State.DEF_USE_ITEMS);
-            State.DEF_USE_ITEMS.setNextState(State.ATT_ROLL);
-            State.ATT_ROLL.setNextState(State.DEF_ROLL);
-            State.DEF_ROLL.setNextState(State.DEAL_DMG);
+            State.ATT_USE_ITEMS.setNextState(State.ATTACK_ROLL);
+//            State.DEF_USE_ITEMS.setNextState(State.ATT_ROLL);
+            State.ATTACK_ROLL.setNextState(State.DEFENCE_ROLL);
+            State.DEFENCE_ROLL.setNextState(State.DAMAGE_ROLL);
+            State.DAMAGE_ROLL.setNextState(ATT_CHOOSE_TARGET);
         }
 
         private State next;
@@ -84,8 +86,13 @@ public class DoomFSM {
     }
 
     public boolean isAtLeastAt(State expectedState) {
-        State currentState = getCurrentState();
+        val currentState = getCurrentState();
         return expectedState.ordinal() <= currentState.ordinal();
+    }
+
+    public boolean isAt(State expectedState) {
+        val currentState = getCurrentState();
+        return expectedState.equals(currentState);
     }
 
     public void checkForCurrentState(State expectedState) {

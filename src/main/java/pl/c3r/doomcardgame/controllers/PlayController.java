@@ -54,19 +54,54 @@ public class PlayController {
         game.playMonsterCards(monsterCardsIds);
     }
 
-
     @PostMapping("/play/player/{id}/roll/initiative")
     public ResponseEntity<Integer> playerInitiativeRoll(@PathVariable("id") Integer playerId) {
-        if (game.alreadyPlayed(playerId)) {
-            String msg = String.format("Player %d already played!", playerId);
-            throw new RuntimeException(msg);
-        }
-        return ResponseEntity.ok(game.initiativeForCreature(playerId));
+        Integer initiative = game.initiativeForCreature(playerId);
+        return ResponseEntity.ok(initiative);
     }
 
     @PostMapping("/play/monster/{id}/roll/initiative")
-    public void monsterInitiativeRoll(@PathVariable String playerId, @RequestParam String type) {
+    public ResponseEntity<Integer> monsterInitiativeRoll(@PathVariable("id") Integer monsterId) {
+        Integer initiative = game.initiativeForCreature(monsterId);
+        return ResponseEntity.ok(initiative);
+    }
 
+    /**
+     * This method has a side effect - it takes the next playing creature from the playing queue and sets it as the
+     * current playing creature for the next couple of game states.
+     *
+     * @return id of the next playing creature.
+     */
+    @GetMapping("/play/next")
+    public ResponseEntity<Integer> getNextCreatureToPlay() {
+        Integer id = game.getNextCreatureToPlay();
+        return ResponseEntity.ok(id);
+    }
+
+    @PostMapping("/play/choose_target/{targetId}")
+    public ResponseEntity<?> chooseTarget(@PathVariable("targetId") Integer targetId) {
+        game.chooseTarget(targetId);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/play/attack")
+    public ResponseEntity<Integer> attack() {
+        Integer attack = game.attack();
+        return ResponseEntity.ok(attack);
+    }
+
+    @PostMapping("/play/defend")
+    public ResponseEntity<?> defend() {
+        game.defend();
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/play/deal_damage")
+    public ResponseEntity<Integer> dealDamage() {
+        Integer damage = game.dealDamage();
+        return ResponseEntity.ok(damage);
+        // goto /play/next
+        // goto /deal/playercards/{id}
     }
 
     @ExceptionHandler({ RuntimeException.class, Exception.class })
