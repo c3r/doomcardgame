@@ -12,7 +12,10 @@ public interface Creature {
     void useItem(Integer itemId);
     void setAttack(Integer attack);
     void setDefence(Integer defence);
+    Integer getAttack();
+    Integer getDefence();
     void dealDamage(Integer damage);
+    boolean is(CreatureType type);
 
     enum CreatureType {
         MONSTER, PLAYER;

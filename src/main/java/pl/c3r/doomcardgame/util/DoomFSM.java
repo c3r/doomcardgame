@@ -4,6 +4,7 @@ import lombok.val;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import pl.c3r.doomcardgame.service.exception.DGStateException;
 
 /**
  * 1 - INIT
@@ -31,9 +32,9 @@ public class DoomFSM {
         INIT,
         DEAL_TO_PLAYERS,
         DEAL_LOCATION,
-        PM_PLAY_MONSTERS,
+        PUPPETMASTER_PLAY_MONSTERS,
         ROLL_DICE_FOR_INITIATIVE,
-        ATT_CHOOSE_TARGET,
+        ATTACKER_CHOOSE_TARGET,
         ATT_USE_ITEMS,
 //        DEF_USE_ITEMS, TODO: Dont know yet if we want to have this
         ATTACK_ROLL,
@@ -43,15 +44,15 @@ public class DoomFSM {
         static {
             State.INIT.setNextState(State.DEAL_TO_PLAYERS);
             State.DEAL_TO_PLAYERS.setNextState(State.DEAL_LOCATION);
-            State.DEAL_LOCATION.setNextState(State.PM_PLAY_MONSTERS);
-            State.PM_PLAY_MONSTERS.setNextState(State.ROLL_DICE_FOR_INITIATIVE);
-            State.ROLL_DICE_FOR_INITIATIVE.setNextState(State.ATT_CHOOSE_TARGET);
-            State.ATT_CHOOSE_TARGET.setNextState(State.ATT_USE_ITEMS);
-            State.ATT_USE_ITEMS.setNextState(State.ATTACK_ROLL);
+            State.DEAL_LOCATION.setNextState(State.PUPPETMASTER_PLAY_MONSTERS);
+            State.PUPPETMASTER_PLAY_MONSTERS.setNextState(State.ROLL_DICE_FOR_INITIATIVE);
+            State.ROLL_DICE_FOR_INITIATIVE.setNextState(State.ATTACKER_CHOOSE_TARGET);
+            State.ATTACKER_CHOOSE_TARGET.setNextState(State.ATTACK_ROLL);
+            //State.ATT_USE_ITEMS.setNextState(State.ATTACK_ROLL);
 //            State.DEF_USE_ITEMS.setNextState(State.ATT_ROLL);
             State.ATTACK_ROLL.setNextState(State.DEFENCE_ROLL);
             State.DEFENCE_ROLL.setNextState(State.DAMAGE_ROLL);
-            State.DAMAGE_ROLL.setNextState(ATT_CHOOSE_TARGET);
+            State.DAMAGE_ROLL.setNextState(ATTACKER_CHOOSE_TARGET);
         }
 
         private State next;
@@ -78,7 +79,7 @@ public class DoomFSM {
     public void proceed() {
         State previous = state;
         state = state.getNextState();
-        log.debug("State changed from {} to {}", previous.name(), state.name());
+//        log.debug("State changed from {} to {}", previous.name(), state.name());
     }
 
     public State getCurrentState() {
@@ -97,9 +98,8 @@ public class DoomFSM {
 
     public void checkForCurrentState(State expectedState) {
         if (!getCurrentState().equals(expectedState)) {
-            String msg = "Expected state was " + expectedState + ". It's " + getCurrentState();
-            log.error(msg);
-            throw new RuntimeException(msg);
+            State currentState = getCurrentState();
+            throw new DGStateException("Expected state was {0}. It''s {1}", expectedState, currentState);
         }
     }
 }

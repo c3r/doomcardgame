@@ -1,9 +1,10 @@
 package pl.c3r.doomcardgame.model;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.val;
+import pl.c3r.doomcardgame.model.card.Card;
+import pl.c3r.doomcardgame.service.exception.DGStateException;
+import pl.c3r.doomcardgame.util.Constants;
 
-import java.text.MessageFormat;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -16,6 +17,13 @@ public class Puppetmaster extends Player {
         playedMonsters = new HashSet<>();
     }
 
+    protected void checkForMaxCards() {
+        val max = Constants.MAX_CARDS_FOR_PUPPETMASTER;
+        if (hand.size() > max) {
+            throw new DGStateException("This player cannot have more than {0} cards!", max);
+        }
+    }
+
     public void playMonsterCard(Integer cardId) {
         removeCard(cardId);
         playedMonsters.add(cardId);
@@ -23,7 +31,7 @@ public class Puppetmaster extends Player {
 
     public void killMonster(Integer monsterId) {
         if (!this.playedMonsters.contains(monsterId)) {
-            throw new RuntimeException(MessageFormat.format("Puppetmaster doesn't played monster with id={0}", monsterId));
+            throw new DGStateException("Puppetmaster doesn't played monster with id={0}", monsterId);
         }
         this.playedMonsters.remove(monsterId);
     }

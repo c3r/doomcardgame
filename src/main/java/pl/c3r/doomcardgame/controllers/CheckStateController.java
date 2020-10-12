@@ -9,72 +9,118 @@ import org.springframework.web.bind.annotation.*;
 import pl.c3r.doomcardgame.model.Creature;
 import pl.c3r.doomcardgame.model.card.Card;
 import pl.c3r.doomcardgame.model.card.MonsterCard;
-import pl.c3r.doomcardgame.util.DoomFSM;
 import pl.c3r.doomcardgame.service.Game;
+import pl.c3r.doomcardgame.service.exception.DGStateException;
+import pl.c3r.doomcardgame.util.DoomFSM;
 
+import java.text.MessageFormat;
+import java.util.List;
 import java.util.Set;
 
 @RestController("/state")
 public class CheckStateController {
 
     private final Logger log = LoggerFactory.getLogger(CheckStateController.class);
+    private final Game game;
+    private final ResponseBuilder responseBuilder;
 
     @Autowired
-    private Game game;
+    public CheckStateController(Game game, ResponseBuilder responseBuilder) {
+        this.game = game;
+        this.responseBuilder = responseBuilder;
+    }
 
     @GetMapping("/puppetmaster/cards")
     @ResponseBody
-    public ResponseEntity<Set<Card>> getPuppetMasterCards() {
+    public ResponseEntity<ResponseDTO> getPuppetMasterCards() {
         game.checkForMinState(DoomFSM.State.DEAL_LOCATION);
         Set<Card> puppetmasterHand = game.getPuppetmasterHand();
-        return ResponseEntity.ok(puppetmasterHand);
+        return responseBuilder.buildResponse(puppetmasterHand, HttpStatus.OK);
     }
 
     @GetMapping("/player/{id}/cards")
     @ResponseBody
-    public ResponseEntity<Set<Card>> getPlayerCards(@PathVariable(name = "id") Integer playerId) {
+    public ResponseEntity<ResponseDTO> getPlayerCards(@PathVariable(name = "id") Integer playerId) {
         game.checkForMinState(DoomFSM.State.DEAL_LOCATION);
         Set<Card> playersCards = game.getPlayersCards(playerId);
-        return ResponseEntity.ok(playersCards);
+        return responseBuilder.buildResponse(playersCards, HttpStatus.OK);
     }
 
     @GetMapping("/locationcard")
     @ResponseBody
-    public ResponseEntity<Card> getLocationCard() {
-        game.checkForMinState(DoomFSM.State.PM_PLAY_MONSTERS);
+    public ResponseEntity<ResponseDTO> getLocationCard() {
+        game.checkForMinState(DoomFSM.State.PUPPETMASTER_PLAY_MONSTERS);
         Card playedLocationCard = game.getPlayedLocationCard();
-        return ResponseEntity.ok(playedLocationCard);
+        return responseBuilder.buildResponse(playedLocationCard, HttpStatus.OK);
     }
 
     @GetMapping("/monstercards")
     @ResponseBody
-    public ResponseEntity<Set<MonsterCard>> getPlayedMonsterCards() {
+    public ResponseEntity<ResponseDTO> getPlayedMonsterCards() {
         game.checkForMinState(DoomFSM.State.ROLL_DICE_FOR_INITIATIVE);
         Set<MonsterCard> playedMonsters = game.getPlayedMonsters();
-        return ResponseEntity.ok(playedMonsters);
+        return responseBuilder.buildResponse(playedMonsters, HttpStatus.OK);
+    }
+
+    @GetMapping("/queue/monsters")
+    @ResponseBody
+    public ResponseEntity<ResponseDTO> getCurrentPlayingMonsters() {
+        game.checkForMinState(DoomFSM.State.ROLL_DICE_FOR_INITIATIVE);
+        List<Integer> playingQueue = game.getCurrentPlayingMonsters();
+        return responseBuilder.buildResponse(playingQueue, HttpStatus.OK);
+    }
+
+    @GetMapping("/queue/players")
+    @ResponseBody
+    public ResponseEntity<ResponseDTO> getCurrentPlayingPlayers() {
+        game.checkForMinState(DoomFSM.State.ROLL_DICE_FOR_INITIATIVE);
+        List<Integer> playingQueue = game.getCurrentPlayingPlayers();
+        return responseBuilder.buildResponse(playingQueue, HttpStatus.OK);
     }
 
     @GetMapping("/attacker")
     @ResponseBody
-    public ResponseEntity<Creature> getCurrentAttacker() {
-        game.checkForMinState(DoomFSM.State.ATT_CHOOSE_TARGET);
+    public ResponseEntity<ResponseDTO> getCurrentAttacker() {
+        game.checkForMinState(DoomFSM.State.ATTACKER_CHOOSE_TARGET);
         Creature attacker = game.getCurrentAttacker();
-        return ResponseEntity.ok(attacker);
+        return responseBuilder.buildResponse(attacker, HttpStatus.OK);
     }
 
     @GetMapping("/defender")
     @ResponseBody
-    public ResponseEntity<Creature> getCurrentDefender() {
-        game.checkForMinState(DoomFSM.State.ATT_CHOOSE_TARGET);
+    public ResponseEntity<ResponseDTO> getCurrentDefender() {
+        game.checkForMinState(DoomFSM.State.ATTACKER_CHOOSE_TARGET);
         Creature defender = game.getCurrentDefender();
-        return ResponseEntity.ok(defender);
+        return responseBuilder.buildResponse(defender, HttpStatus.OK);
     }
 
-    @ExceptionHandler({ RuntimeException.class, Exception.class })
-    protected ResponseEntity<Object> handleException(RuntimeException ex) {
-        log.error(ex.getMessage());
-        return ResponseEntity
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ex.getMessage());
+    @GetMapping("/attack/result")
+    @ResponseBody
+    public ResponseEntity<ResponseDTO> getCurrentAttackResult() {
+        game.checkForMinState(DoomFSM.State.ATTACK_ROLL);
+        Integer attackResult = game.getCurrentAttacker().getAttack();
+        return responseBuilder.buildResponse(attackResult, HttpStatus.OK);
     }
+
+    @GetMapping("/defence/result")
+    @ResponseBody
+    public ResponseEntity<ResponseDTO> getCurrentDefenceResult() {
+        game.checkForMinState(DoomFSM.State.DEFENCE_ROLL);
+        Integer defence = game.getCurrentDefender().getDefence();
+        return responseBuilder.buildResponse(defence, HttpStatus.OK);
+    }
+
+    @ExceptionHandler({ RuntimeException.class })
+    protected ResponseEntity<ResponseDTO> handleException(RuntimeException ex) {
+        String msg = MessageFormat.format("{0}:", ex.getClass().getName());
+        log.error(msg, ex);
+        return responseBuilder.buildErrorResponse(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler({ DGStateException.class })
+    protected ResponseEntity<ResponseDTO> handleException(DGStateException ex) {
+        log.warn(ex.getMessage());
+        return responseBuilder.buildErrorResponse(ex.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+
 }

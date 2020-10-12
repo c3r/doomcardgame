@@ -2,9 +2,9 @@ package pl.c3r.doomcardgame.model;
 
 import lombok.val;
 import pl.c3r.doomcardgame.model.card.Card;
+import pl.c3r.doomcardgame.service.exception.DGStateException;
 import pl.c3r.doomcardgame.util.Constants;
 
-import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -23,7 +23,7 @@ public class Player implements Creature {
         this.id = id;
         this.hand = new HashMap<>();
         this.name = name;
-        this.state = CreatureState.builder().hitPoints(Constants.PLAYERS_MAX_HP).build();
+        this.state = new CreatureState(Constants.PLAYERS_MAX_HP);
         this.baseDamage = Constants.PLAYERS_BASE_DAMAGE;
         this.baseInitiative = Constants.PLAYERS_BASE_INITIATIVE;
     }
@@ -51,20 +51,20 @@ public class Player implements Creature {
         hand.remove(cardId);
     }
 
-    private void checkForMaxCards() {
+    protected void checkForMaxCards() {
         val max = Constants.MAX_CARDS_FOR_PLAYER;
         if (hand.size() > max) {
-            throw new RuntimeException(MessageFormat.format("This player cannot have more than {0} cards!", max));
+            throw new DGStateException("This player cannot have more than {0} cards!", max);
         }
     }
 
     protected void checkForCard(Integer cardId) {
         if (hand.isEmpty()) {
-            throw new RuntimeException(MessageFormat.format("Players {0} hand is empty!", id));
+            throw new DGStateException("Players {0} hand is empty!", id);
         }
 
         if (!hand.containsKey(cardId)) {
-            throw new RuntimeException(MessageFormat.format("Player {0} does not have card with id={1}", this, cardId));
+            throw new DGStateException("Player {0} does not have card with id={1}", this, cardId);
         }
     }
 
@@ -101,7 +101,7 @@ public class Player implements Creature {
     @Override
     public void useItem(Integer itemId) {
         if (!hand.containsKey(itemId)) {
-            throw new RuntimeException(MessageFormat.format("Player {0} doesn't have item with id={1}", this, itemId));
+            throw new DGStateException("Player {0} doesn't have item with id={1}", this, itemId);
         }
         state.setUsedItemId(itemId);
     }
@@ -117,8 +117,23 @@ public class Player implements Creature {
     }
 
     @Override
+    public Integer getAttack() {
+        return state.getAttack();
+    }
+
+    @Override
+    public Integer getDefence() {
+        return state.getDefence();
+    }
+
+    @Override
     public void dealDamage(Integer damage) {
 
+    }
+
+    @Override
+    public boolean is(CreatureType type) {
+        return type.equals(CreatureType.PLAYER);
     }
 
     public boolean hasCards() {

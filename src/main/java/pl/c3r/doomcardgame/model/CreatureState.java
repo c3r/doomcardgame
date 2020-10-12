@@ -5,8 +5,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
-@Builder
 public class CreatureState {
     private Integer hitPoints;
     private Integer initiative;
@@ -14,6 +12,10 @@ public class CreatureState {
     private Integer defence;
     private Integer targetedCreatureId;
     private Integer usedItemId;
+
+    public CreatureState(Integer hitPoints) {
+        this.hitPoints = hitPoints;
+    }
 
     public boolean isAlive() {
         return hitPoints > 0;

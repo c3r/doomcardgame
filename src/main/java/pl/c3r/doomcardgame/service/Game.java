@@ -1,11 +1,13 @@
 package pl.c3r.doomcardgame.service;
 
 import lombok.val;
+import lombok.var;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import pl.c3r.doomcardgame.model.card.MonsterCard;
+import pl.c3r.doomcardgame.service.exception.DGStateException;
 import pl.c3r.doomcardgame.util.Constants;
 import pl.c3r.doomcardgame.util.DoomFSM;
 import pl.c3r.doomcardgame.model.Creature;
@@ -17,17 +19,20 @@ import java.text.MessageFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static pl.c3r.doomcardgame.model.Creature.CreatureType.MONSTER;
+import static pl.c3r.doomcardgame.model.Creature.CreatureType.PLAYER;
 import static pl.c3r.doomcardgame.util.DoomFSM.State.*;
 
 @Component
 public class Game {
 
     private final Logger log = LoggerFactory.getLogger(Game.class);
+    private final PlayQueue playQueue;
+
     private Map<Integer, Player> players;
     private Map<Integer, Creature> creatures;
     private Puppetmaster puppetmaster;
     private Card currentLocationCard;
-    private PlayQueue playQueue;
 
     // TODO: wrap in state var?
     private Creature currentAttacker;
@@ -103,23 +108,23 @@ public class Game {
             return;
         }
         val currentState = stateMachine.getCurrentState();
-        throw new RuntimeException(MessageFormat.format("Expected state was at least {0}. It's {1}", expectedState, currentState));
+        throw new DGStateException("Expected state was at least {0}. It''s {1}", expectedState.name(), currentState.name());
     }
 
     public void dealCardsForPlayer(Integer playerId) {
         stateMachine.checkForCurrentState(DEAL_TO_PLAYERS);
         val player = getPlayer(playerId);
         if (player.hasCards()) {
-            throw new RuntimeException(MessageFormat.format("Player {0} already has been dealt cards!", playerId));
+            throw new DGStateException("Player {0} already has been dealt cards!", playerId);
         }
 
         for (int i = 0; i < Constants.MAX_CARDS_FOR_PLAYER; i++) {
             val card = gameDeck.dealNextItemCard();
-            log.debug(MessageFormat.format("Card {0} dealt to player {1}", card, player));
+            log.debug("Card {} dealt to player {}", card, player);
             player.addCard(card);
         }
 
-        if (!stateMachine.isAt(DEAL_TO_PLAYERS) || !this.isAnyoneWithoutCards()) {
+        if (!stateMachine.isAt(DEAL_TO_PLAYERS) || this.everybodyHasCards()) {
             stateMachine.proceed();
         }
     }
@@ -127,7 +132,7 @@ public class Game {
     private Player getPlayer(Integer playerId) {
         val player = players.get(playerId);
         if (player == null) {
-            throw new RuntimeException(MessageFormat.format("Player {0} not found!", playerId));
+            throw new DGStateException("Player {0} not found!", playerId);
         }
         return player;
     }
@@ -139,12 +144,14 @@ public class Game {
             log.debug("Card {} dealt to player {}", card, puppetmaster);
             puppetmaster.addCard(card);
         }
-        stateMachine.proceed();
+        if (!stateMachine.isAt(DEAL_TO_PLAYERS) || this.everybodyHasCards()) {
+            stateMachine.proceed();
+        }
     }
 
     public Card getPlayedLocationCard() {
         if (currentLocationCard == null) {
-            throw new RuntimeException("No location card was played yet!");
+            throw new DGStateException("No location card was played yet!");
         }
         return currentLocationCard;
     }
@@ -156,7 +163,7 @@ public class Game {
         stateMachine.proceed();
     }
 
-    private boolean isAnyoneWithoutCards() {
+    private boolean everybodyHasCards() {
         val isPlayerWithNoCards = this.players
                 .values()
                 .stream()
@@ -165,7 +172,7 @@ public class Game {
         val isPuppetmasterWithoutCards = this.puppetmaster.getHand() == null || this.puppetmaster.getHand().isEmpty();
         val isAnyoneWithoutCards = isPlayerWithNoCards || isPuppetmasterWithoutCards;
         log.debug("Checking if there is anyone without cards... {}", isAnyoneWithoutCards);
-        return isAnyoneWithoutCards;
+        return !isAnyoneWithoutCards;
     }
 
     public Integer initiativeForCreature(Integer creatureId) {
@@ -182,7 +189,7 @@ public class Game {
                 creature.getInitiative(),
                 rolledBonus);
 
-        if (playQueue.everyonePlayed()) {
+        if (playQueue.everyoneEnqueued()) {
             log.debug("Complete playing queue: {}", playQueue);
             stateMachine.proceed();
         }
@@ -191,34 +198,35 @@ public class Game {
     }
 
     public Integer getNextCreatureToPlay() {
-        stateMachine.isAtLeastAt(ATT_CHOOSE_TARGET);
+        stateMachine.isAtLeastAt(ATTACKER_CHOOSE_TARGET);
         if (currentAttacker != null) {
-            throw new RuntimeException(MessageFormat.format("Creature {0} is still playing!", currentAttacker));
+            throw new DGStateException("Creature {0} is still playing!", currentAttacker);
         }
 
         Creature nextCreature = playQueue.getNextCreature();
         currentAttacker = nextCreature;
-
+        log.debug(MessageFormat.format("Next creature to play is {0}", nextCreature));
         return nextCreature.getId();
     }
 
     public void chooseTarget(Integer targetId) {
-        stateMachine.checkForCurrentState(ATT_CHOOSE_TARGET);
+        stateMachine.checkForCurrentState(ATTACKER_CHOOSE_TARGET);
         checkForAttacker();
 
         if (targetId.equals(currentAttacker.getId())) {
-            throw new RuntimeException("You can't attack yourself!");
+            throw new DGStateException("You can't attack yourself!");
         }
 
         if (!playQueue.containsCreature(targetId)) {
-            throw new RuntimeException(MessageFormat.format("The target with id={} is not playing!", targetId));
+            throw new DGStateException("The target with id={0} is not playing!", targetId);
         }
 
         currentDefender = playQueue.getCreature(targetId);
         if (currentDefender.isDead()) {
-            throw new RuntimeException(MessageFormat.format("{0} is already dead!", currentDefender));
+            throw new DGStateException("{0} is already dead!", currentDefender);
         }
 
+        log.debug(MessageFormat.format("Current attacker ({0}) choose {1} to attack", currentAttacker, currentDefender));
         currentAttacker.setTarget(targetId);
         stateMachine.proceed();
     }
@@ -249,24 +257,31 @@ public class Game {
         stateMachine.checkForCurrentState(DAMAGE_ROLL);
         checkForAttacker();
         checkForDefender();
-        val damage = dice.get10k();
-        currentDefender.dealDamage(damage);
-
-        if (currentDefender.isDead()) {
-            playQueue.removeCreature(currentDefender.getId());
-
-            if (currentDefender.getType().equals(Creature.CreatureType.MONSTER)) {
-                puppetmaster.killMonster(currentDefender.getId());
-                if (puppetmaster.allMonstersDead()) {
-                    // TODO: ???
-                    // stateMachine.reset();
+        var damageResult = 0;
+        // TODO: this should be checked earlier and change the state accordingly
+        if (currentAttacker.getAttack() >= currentDefender.getDefence()) {
+            damageResult = dice.get10k() * 3;
+            currentDefender.dealDamage(damageResult);
+            log.debug(MessageFormat.format("{0} damage dealt to {1}", damageResult, currentDefender));
+            if (currentDefender.isDead()) {
+                log.debug(MessageFormat.format("{0} dies!", currentDefender));
+                playQueue.removeCreature(currentDefender.getId());
+                if (currentDefender.is(MONSTER)) {
+                    puppetmaster.killMonster(currentDefender.getId());
+                    if (puppetmaster.allMonstersDead()) {
+                        log.debug("All monsters are dead!");
+                        playQueue.clear();
+                        // TODO: ??? stateMachine.reset();
+                    }
                 }
             }
-
+        } else {
+            log.debug(MessageFormat.format("{0} missed!", currentAttacker));
         }
-
+        currentAttacker = null;
+        currentDefender = null;
         stateMachine.proceed();
-        return damage;
+        return damageResult;
     }
 
     // TODO: extract GameState var?
@@ -277,13 +292,13 @@ public class Game {
 
     private void checkForDefender() {
         if (currentDefender == null) {
-            throw new RuntimeException("Nobody is being attacked yet!");
+            throw new DGStateException("Nobody is being attacked yet!");
         }
     }
 
     private void checkForAttacker() {
         if (currentAttacker == null) {
-            throw new RuntimeException("There is no current attacker assigned!");
+            throw new DGStateException("There is no current attacker assigned!");
         }
     }
 
@@ -292,73 +307,19 @@ public class Game {
         return currentDefender;
     }
 
-    private static class PlayQueue {
-
-        private final PriorityQueue<Creature> playQueue;
-        private final Set<Integer> notPlayedYet;
-        private final Map<Integer, Creature> creaturesCache;
-
-        PlayQueue() {
-            playQueue = new PriorityQueue<>(Comparator.comparing(Creature::getInitiative).reversed());
-            notPlayedYet = new HashSet<>();
-            creaturesCache = new HashMap<>();
-        }
-
-        boolean everyonePlayed() {
-            return notPlayedYet.isEmpty();
-        }
-
-        void addCreatures(Collection<? extends Creature> creatures) {
-            for (Creature creature : creatures) {
-                this.notPlayedYet.add(creature.getId());
-                this.creaturesCache.putIfAbsent(creature.getId(), creature);
-            }
-        }
-
-        Creature getNextCreature() {
-            if (playQueue.isEmpty()) {
-                throw new RuntimeException("Everyone already played!");
-            }
-            return playQueue.poll();
-        }
-
-        public boolean containsCreature(Integer targetId) {
-            return creaturesCache.containsKey(targetId);
-        }
-
-        void enqueue(Creature creature) {
-            if (playQueue.contains(creature)) {
-                throw new RuntimeException(MessageFormat.format("Creature {0} already enqueued!", creature.getId()));
-            }
-            playQueue.add(creature);
-        }
-
-        public Creature getCreature(Integer creatureId) {
-            return creaturesCache.get(creatureId);
-        }
-
-        public void removeCreature(Integer creatureId) {
-            if (!creaturesCache.containsKey(creatureId)) {
-                throw new RuntimeException(MessageFormat.format("Creature with id={0} not playing!", creatureId));
-            }
-            Creature creature = creaturesCache.remove(creatureId);
-            if (!playQueue.contains(creature)) {
-                throw new RuntimeException(MessageFormat.format("Creature {0} not in cache!", creature));
-            }
-            playQueue.remove(creature);
-        }
-
-        @Override
-        public String toString() {
-            val creatures = playQueue.toArray(new Creature[0]);
-            Arrays.sort(creatures, playQueue.comparator());
-            return Arrays.stream(creatures)
-                    .map(this::formatCreature)
-                    .collect(Collectors.joining(", "));
-        }
-
-        private String formatCreature(Creature elem) {
-            return String.format("%s (init: %d)", elem.getName(), elem.getInitiative());
-        }
+    public List<Integer> getCurrentPlayingMonsters() {
+        return playQueue.getCurrentPlayingQueue()
+                .stream()
+                .filter(creature -> creature.is(MONSTER))
+                .map(Creature::getId)
+                .collect(Collectors.toList());
     }
+    public List<Integer> getCurrentPlayingPlayers() {
+        return playQueue.getCurrentPlayingQueue()
+                .stream()
+                .filter(creature -> creature.is(PLAYER))
+                .map(Creature::getId)
+                .collect(Collectors.toList());
+    }
+
 }

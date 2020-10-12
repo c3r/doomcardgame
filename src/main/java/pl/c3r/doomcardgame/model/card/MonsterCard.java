@@ -5,21 +5,30 @@ import lombok.Data;
 import pl.c3r.doomcardgame.model.Creature;
 import pl.c3r.doomcardgame.model.CreatureState;
 import pl.c3r.doomcardgame.service.GameDeck;
+import pl.c3r.doomcardgame.service.exception.DGStateException;
 
-@Builder
 @Data
 public class MonsterCard implements Card, Creature {
     private final GameDeck.Monster monster;
     private final Integer id;
-    private Integer initiativeBonus;
-    private final CreatureState state;
+    private CreatureState state;
+
+    @Builder
+    public static MonsterCard newMonsterCard(Integer id, GameDeck.Monster monster) {
+        Integer hp = monster.getHp();
+        CreatureState state = new CreatureState(hp);
+        return new MonsterCard(monster, id, state);
+    }
+
+    private MonsterCard(GameDeck.Monster monster, Integer id, CreatureState state) {
+        this.monster = monster;
+        this.id = id;
+        this.state = state;
+    }
 
     @Override
     public Integer getInitiative() {
-        if (initiativeBonus == null) {
-            initiativeBonus = 0;
-        }
-        return monster.getBaseInitiative() + initiativeBonus;
+        return state.getInitiative();
     }
 
     @Override
@@ -49,12 +58,13 @@ public class MonsterCard implements Card, Creature {
 
     @Override
     public void setInitiativeBonus(Integer bonus) {
-        initiativeBonus = bonus;
+        Integer initiative = monster.getBaseInitiative() + bonus;
+        state.setInitiative(initiative);
     }
 
     @Override
     public void useItem(Integer itemId) {
-        throw new RuntimeException("Not supported");
+        throw new DGStateException("Not supported");
     }
 
     @Override
@@ -68,8 +78,23 @@ public class MonsterCard implements Card, Creature {
     }
 
     @Override
+    public Integer getAttack() {
+        return state.getAttack();
+    }
+
+    @Override
+    public Integer getDefence() {
+        return state.getDefence();
+    }
+
+    @Override
     public void dealDamage(Integer damage) {
         state.setHitPoints(state.getHitPoints() - damage);
+    }
+
+    @Override
+    public boolean is(CreatureType type) {
+        return type.equals(CreatureType.MONSTER);
     }
 
     @Override

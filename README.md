@@ -26,16 +26,21 @@ L | **DEAL_DMG**                    | Dealing the damage to the Victim, and goto
 
 ## REST API
 
-#### Reset the state of the game  
+### Reset the state of the game  
 Reqest: `GET` `/reset`  
 
 Example response: 
-```
-Game restarted.
+```json
+{
+    "errorCode": null,
+    "errorMessage": null,
+    "returnCode": null,
+    "message" : "Game restarted"
+}
 ```
 `HTTP/1.1 200 OK`
 
-#### Deal cards for player    
+### Deal cards for player    
 Reqest: `POST` `/deal/playercards/{playerId}`  
 
 | Param | Description 
@@ -44,49 +49,62 @@ Reqest: `POST` `/deal/playercards/{playerId}`
 
 Example response: 
 ```json
-[ 
-    { "item": { "cost": 4, "name": "Super shotgun" }, "id": 618 },
-    { "item": { "cost": 6, "name": "Medkit" }, "id": 605 }
-]
+{
+    "errorCode": null,
+    "errorMessage": null,
+    "returnCode": null,
+    "message": null, 
+    "responseEntity" : [ 
+        { "item": { "cost": 4, "name": "Super shotgun" }, "id": 618 },
+        { "item": { "cost": 6, "name": "Medkit" }, "id": 605 }
+    ] 
+}
 ```  
 `HTTP/1.1 200 OK`
 
-#### Deal cards for the Puppetmaster  
+### Deal cards for the Puppetmaster  
 Request: `POST` `/deal/puppetmaster`  
 Example response:
 ```json
-[
-    {
-        "monster": {
-            "baseInitiative": 1,
-            "hp": 10,
-            "cost": 1,
-            "name": "Imp"
+{    
+    "errorCode": null,
+    "errorMessage": null,
+    "returnCode": null,
+    "message": null, 
+    "responseEntity": 
+     [
+        {
+            "monster": {
+                "baseInitiative": 1,
+                "hp": 10,
+                "cost": 1,
+                "name": "Imp"
+            },
+            "id": 305,
+            "initiativeBonus": 0,
+            "initiative": 1,
+            "name": "Imp",
+            "type": "MONSTER"
         },
-        "id": 305,
-        "initiativeBonus": 0,
-        "initiative": 1,
-        "name": "Imp",
-        "type": "MONSTER"
-    },
-    {
-        "monster": {
-            "baseInitiative": 3,
-            "hp": 30,
-            "cost": 3,
-            "name": "Baron"
-        },
-        "id": 321,
-        "initiativeBonus": 0,
-        "initiative": 3,
-        "name": "Baron",
-        "type": "MONSTER"
-    }
-]
+        {
+            "monster": {
+                "baseInitiative": 3,
+                "hp": 30,
+                "cost": 3,
+                "name": "Baron"
+            },
+            "id": 321,
+            "initiativeBonus": 0,
+            "initiative": 3,
+            "name": "Baron",
+            "type": "MONSTER"
+        }
+    ]
+}
 ```
 `HTTP/1.1 200 OK`
 
-#### Check Player's cards
+### Check Player's cards
 Check Player's cards  
 Request: `GET` `/player/{playerId}/cards`
 
@@ -96,114 +114,163 @@ Request: `GET` `/player/{playerId}/cards`
 
 Example response:
 ```json
-[{"item":{"cost":4,"name":"Super shotgun"},"id":618},{"item":{"cost":6,"name":"Medkit"},"id":605}]
+{
+    "errorCode": null,
+    "errorMessage": null,
+    "returnCode": null,
+    "message": null, 
+    "responseEntity" : [
+        {"item":{"cost":4,"name":"Super shotgun"},"id":618},{"item":{"cost":6,"name":"Medkit"},"id":605}
+    ]
+}
 ```
 `HTTP/1.1 200 OK`
 
-#### Check Puppetmaster's cards
+### Check Puppetmaster's cards
 Check the Puppetmaster's cards (current hard)  
 `GET` `/puppetmaster/cards`  
 Example response:
 ```json
-[
-    {
-        "monster": {
-            "baseInitiative": 1,
-            "hp": 10,
-            "cost": 1,
-            "name": "Imp"
+{
+    "errorCode": null,
+    "errorMessage": null,
+    "returnCode": null,
+    "message": null, 
+    "responseEntity": 
+    [
+        {
+            "monster": {
+                "baseInitiative": 1,
+                "hp": 10,
+                "cost": 1,
+                "name": "Imp"
+            },
+            "id": 305,
+            "initiativeBonus": 0,
+            "initiative": 1,
+            "name": "Imp",
+            "type": "MONSTER"
         },
-        "id": 305,
-        "initiativeBonus": 0,
-        "initiative": 1,
-        "name": "Imp",
-        "type": "MONSTER"
-    },
-    {
-        "monster": {
-            "baseInitiative": 3,
-            "hp": 30,
-            "cost": 3,
-            "name": "Baron"
-        },
-        "id": 321,
-        "initiativeBonus": 0,
-        "initiative": 3,
-        "name": "Baron",
-        "type": "MONSTER"
-    }
-]
+        {
+            "monster": {
+                "baseInitiative": 3,
+                "hp": 30,
+                "cost": 3,
+                "name": "Baron"
+            },
+            "id": 321,
+            "initiativeBonus": 0,
+            "initiative": 3,
+            "name": "Baron",
+            "type": "MONSTER"
+        }
+    ]
+}
 ```
 `HTTP/1.1 200 OK`
 
-#### Deal Location Card
+### Deal Location Card
 Deal the location card to the table  
 Request: `POST` `/deal/locationcard`
 Example response:
 ```json
-{"location":{"name":"Room_04"},"id":107}
+{
+    "errorCode": null,
+    "errorMessage": null,
+    "returnCode": null,
+    "message": null,
+    "responseEntity": {
+      "location": { "name": "Room_04" },
+      "id":107
+      }   
+}
 ```
 `HTTP/1.1 200 OK`
 
-#### Check location card 
+### Check location card 
 Check the currently played location card laying on the table  
 Request: `GET` `/locationcard`
 Example response:
 ```json
-{"location":{"name":"Room_04"},"id":107}
+
+```
+```json
+{
+    "errorCode": null,
+    "errorMessage": null,
+    "returnCode": null,
+    "message": null,
+    "responseEntity": {
+      "location": { "name": "Room_04" },
+      "id":107
+      }   
+}
 ```
 `HTTP/1.1 200 OK`
 
-#### Play Monster Cards 
+### Play Monster Cards 
 Play Monster Cards from Puppetmaster's hand  
 Request `POST` `/play/puppetmaster/monstercards` 
  
 Example request:
 ```json
-[ 321, 305 ]
+{
+    "errorCode": null,
+    "errorMessage": null,
+    "returnCode": null,
+    "message": null,
+    "responseEntity": [ 321, 305 ]   
+}
 ```
 
 Example response:    
 `HTTP/1.1 200 OK`
 
-#### Check monster cards
+### Check monster cards
 Check monster cards that were played by the Puppetmaster  
 Request: `GET` `/monstercards`  
 
 Example response:  
 ```json
-[
-    {
-        "monster": {
-            "baseInitiative": 1,
-            "hp": 10,
-            "cost": 1,
-            "name": "Imp"
-        },
-        "id": 305,
-        "initiativeBonus": 0,
-        "initiative": 1,
-        "name": "Imp",
-        "type": "MONSTER"
-    },
-    {
-        "monster": {
-            "baseInitiative": 3,
-            "hp": 30,
-            "cost": 3,
-            "name": "Baron"
-        },
-        "id": 321,
-        "initiativeBonus": 0,
-        "initiative": 3,
-        "name": "Baron",
-        "type": "MONSTER"
-    }
-]
+{
+    "errorCode": null,
+    "errorMessage": null,
+    "returnCode": null,
+    "message": null,
+    "responseEntity":
+        [
+            {
+                "monster": {
+                    "baseInitiative": 1,
+                    "hp": 10,
+                    "cost": 1,
+                    "name": "Imp"
+                },
+                "id": 305,
+                "initiativeBonus": 0,
+                "initiative": 1,
+                "name": "Imp",
+                "type": "MONSTER"
+            },
+            {
+                "monster": {
+                    "baseInitiative": 3,
+                    "hp": 30,
+                    "cost": 3,
+                    "name": "Baron"
+                },
+                "id": 321,
+                "initiativeBonus": 0,
+                "initiative": 3,
+                "name": "Baron",
+                "type": "MONSTER"
+            }
+        ]
+}
 ```
 `HTTP/1.1 200 OK`
 
-#### Roll for initiative for Player
+### Roll for initiative for Player
 Request: `POST` `/play/player/{playerId}/roll/initiative`
 
 | Param | Description 
@@ -211,12 +278,18 @@ Request: `POST` `/play/player/{playerId}/roll/initiative`
 | playerId | Id of the player to roll for initiative
 
 Example response:
-```
-7
+```json
+{
+    "errorCode": null,
+    "errorMessage": null,
+    "returnCode": null,
+    "message": null,
+    "responseEntity": 7   
+}
 ```
 `HTTP/1.1 200 OK`
 
-#### Roll for initiative for Monster
+### Roll for initiative for Monster
 Request: `POST` `/play/player/{monsterId}/roll/initiative`
 
 | Param | Description 
@@ -224,22 +297,34 @@ Request: `POST` `/play/player/{monsterId}/roll/initiative`
 | monsterId | Id of the monster to roll for initiative 
 
 Example response:
-```
-11
+```json
+{
+    "errorCode": null,
+    "errorMessage": null,
+    "returnCode": null,
+    "message": null,
+    "responseEntity": 11   
+}
 ```
 `HTTP/1.1 200 OK`
 
-#### Get next Creature to play
+### Get next Creature to play
 Returns the `id` of the next creature to choose the target to attack  
 Request: `GET` `/play/next`
 
 Example response:
-```
-1
+```json
+{
+    "errorCode": null,
+    "errorMessage": null,
+    "returnCode": null,
+    "message": null,
+    "responseEntity": 1   
+}
 ```
 `HTTP/1.1 200 OK` 
 
-#### Choose target
+### Choose target
 Request the target for currently playing creature  
 Request: `POST` `/play/choose_target/{targetId}`
 
@@ -252,32 +337,173 @@ Example response:
 
 `HTTP/1.1 200 OK`
 
-#### Roll for attack 
+### Roll for attack 
 Roll the dice for the attack value for currently attacking creature  
 Request: `POST` `/play/attack`
 
 Example response:
-```
-5
+```json
+{
+    "errorCode": null,
+    "errorMessage": null,
+    "returnCode": null,
+    "message": null,
+    "responseEntity": 5   
+}
 ```
 `HTTP/1.1 200 OK`
 
-#### Roll for defence 
+### Roll for defence 
 Roll the dice for the defence value for currently attacked creature  
 Request: `POST` `/play/defend`
 
 Example response:
-```
-5
+```json
+{
+    "errorCode": null,
+    "errorMessage": null,
+    "returnCode": null,
+    "message": null,
+    "responseEntity": 5   
+}
 ```
 `HTTP/1.1 200 OK`
 
-#### Deal the damage
+### Deal the damage
 Roll for the damage that will be dealt to the attacked creature  
 Request: `POST` `/play/deal_damage`
 
 Example response:
+```json
+{
+    "errorCode": null,
+    "errorMessage": null,
+    "returnCode": null,
+    "message": null,
+    "responseEntity": 5   
+}
 ```
-5
+`HTTP/1.1 200 OK`
+
+### Check the playing queue - list monsters  
+Lists all the monsters that are actually in the playing queue  
+Request: `GET` `/queue/monsters`
+
+Example response:
+```json
+{
+    "errorCode": null,
+    "errorMessage": null,
+    "returnCode": null,
+    "message": null,
+    "responseEntity": [321, 305]   
+}
+```
+
+`HTTP/1.1 200 OK`
+
+### Check the playing queue - list players
+Lists all the players that are actually in the playing queue  
+Request: `GET` `/queue/players`
+
+Example response:
+```json
+{
+    "errorCode": null,
+    "errorMessage": null,
+    "returnCode": null,
+    "message": null,
+    "responseEntity": [1, 2]   
+}
+```
+`HTTP/1.1 200 OK`
+
+### The current attacking Creature
+Displays the current attacking Creature    
+Request: `GET` `/attacker`
+
+Example response:
+```json
+{
+    "errorCode": null,
+    "errorMessage": null,
+    "returnCode": null,
+    "message": null,
+    "responseEntity": {
+        "id": 1,
+        "name": "PLAYER1",
+        "hand": [
+            { "item": { "cost": 5, "name": "Shotgun" }, "id": 613 },
+            { "item": { "cost": 1, "name": "Shield" }, "id": 600 }
+        ],
+        "type": "PLAYER",
+        "target": null,
+        "defence": null,
+        "attack": null,
+        "dead": false,
+        "initiative": 6
+    }
+}
+```
+`HTTP/1.1 200 OK`
+
+### The current defending Creature
+Displays the current defending Creature    
+Request: `GET` `/defender`
+
+Example response:
+```json
+{
+    "errorCode": null,
+    "errorMessage": null,
+    "returnCode": null,
+    "message": null,
+    "responseEntity": {
+        "id": 1,
+        "name": "PLAYER1",
+        "hand": [
+            { "item": { "cost": 5, "name": "Shotgun" }, "id": 613 },
+            { "item": { "cost": 1, "name": "Shield" }, "id": 600 }
+        ],
+        "type": "PLAYER",
+        "target": null,
+        "defence": null,
+        "attack": null,
+        "dead": false,
+        "initiative": 6
+    }
+}
+```
+`HTTP/1.1 200 OK`
+
+### Current attack result
+Displays the current attack result    
+Request: `GET` `/attack/result`
+
+Example response:
+```json
+{
+    "errorCode": null,
+    "errorMessage": null,
+    "returnCode": null,
+    "message": null,
+    "responseEntity": 5
+}
+```
+`HTTP/1.1 200 OK`
+
+### Current defend result
+Displays the current attack result    
+Request: `GET` `/attack/defence`
+
+Example response:
+```json
+{
+    "errorCode": null,
+    "errorMessage": null,
+    "returnCode": null,
+    "message": null,
+    "responseEntity": 5
+}
 ```
 `HTTP/1.1 200 OK`
