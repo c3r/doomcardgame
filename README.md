@@ -535,12 +535,13 @@ for (card_id : monster_cards) {                     // Roll for the initiative f
     POST("/play/player/{card_id}/roll/initiative")  // currently layed on the table (in play)
 }
 
-while ( GET("/queue/monsters").size() > 0 ) {
+while ( GET("/queue/monsters").size() > 0 ) { // We play until all monsters are killed
 
     next_player = GET("/play/next")         // Get next creature to play. It may be of type PLAYER or 
-                                            // MONSTER. If there is an errorMessage in the response 
-                                            // object, it means that all Monsters are already dead.    
-
+                                            // MONSTER. The play queue is constructed according to initiative
+                                            // results from the initiative rolling loop. And it's accessed in
+                                            // a circular manner.
+                        
     attacker = GET("/attacker")             // You can check which creature is the attacker now.
 
     target_ids = attacker.type == PLAYER    // When the attacker creature is of type PLAYER, it should 
