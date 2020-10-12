@@ -2,21 +2,18 @@ package pl.c3r.doomcardgame;
 
 import com.google.gson.*;
 import lombok.val;
-import org.assertj.core.util.Streams;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.web.server.LocalServerPort;
-import pl.c3r.doomcardgame.model.card.MonsterCard;
 
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.Random;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -162,8 +159,14 @@ class DoomcardgameApplicationTests {
 		JsonElement errorMessage;
 
 		do {
+
 			JsonObject nextPlayerResponse = get("/play/next");
 			errorMessage = nextPlayerResponse.get("errorMessage");
+
+			if (!errorMessage.equals(JsonNull.INSTANCE)) {
+				break;
+			}
+
 			String nextCreatureToPlayId = nextPlayerResponse
 					.get("responseEntity")
 					.getAsString();
@@ -174,18 +177,18 @@ class DoomcardgameApplicationTests {
 			assertThat(attackerId).isEqualTo(nextCreatureToPlayId);
 
 			// When trying to attack yourself, should get an exception message
-//			err = post(MessageFormat.format("/play/choose_target/{0}", nextCreatureToPlayId))
-//					.get("errorMessage")
-//					.getAsString();
-//
-//			assertThat(err).isEqualTo("You can't attack yourself!");
+			err = post(MessageFormat.format("/play/choose_target/{0}", nextCreatureToPlayId))
+					.get("errorMessage")
+					.getAsString();
+
+			assertThat(err).isEqualTo("You can't attack yourself!");
 
 			// When trying to attack a non existent creature, should get an exception message
-//			err = post("/play/choose_target/999")
-//					.get("errorMessage")
-//					.getAsString();
-//
-//			assertThat(err).isEqualTo("The target with id=999 is not playing!");
+			err = post("/play/choose_target/999")
+					.get("errorMessage")
+					.getAsString();
+
+			assertThat(err).isEqualTo("The target with id=999 is not playing!");
 
 			// Choose a valid target
 			String type = attackerCreature.get("type").getAsString();

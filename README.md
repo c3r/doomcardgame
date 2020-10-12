@@ -507,3 +507,64 @@ Example response:
 }
 ```
 `HTTP/1.1 200 OK`
+
+### Example game scenario in pseudocode
+
+```
+player1_cards = POST("/deal/playercards/1")         // Deal P1, P2 and Puppetmasters cards
+player2_cards = POST("/deal/playercards/1")             
+puppetmaster_cards = POST("/deal/playercards/1") 
+       
+player1_cards = GET("/player/1/cards")              // Query the state controller for both players cards and the 
+player2_cards = GET("/player/2/cards")              // puppetmasters cards
+puppetmaster_cards = GET("/puppetmaster/cards")         
+
+location_card = POST("/deal/locationcard")          // Deal the location card on the table. After you deal the  
+location_card = GET("/locationcard")                // location card, you can check it by querying the state 
+                                                    // controller
+
+monster_cards_ids = choose_from(puppetmaster_cards)         // After dealing the location card, Puppetmaster can play 
+POST("/play/puppetmaster/monstercards", monster_cards_ids)  // some monster cards from his hand. After you play the 
+monster_cards = GET("/monstercards")                        // monster cards, you can check them by querying the state 
+                                                            // controller
+
+p1_initiative = POST("/play/player/1/roll/initiative")  // Roll for initiative for both player 1 and player 2
+p2_initiative = POST("/play/player/2/roll/initiative")
+
+for (card_id : monster_cards) {                     // Roll for the initiative for all the monster cards that are
+    POST("/play/player/{card_id}/roll/initiative")  // currently layed on the table (in play)
+}
+
+while (true) {
+
+    next_player = GET("/play/next")            // Get next creature to play. It may be of type PLAYER or 
+    if (next_player.errorMessage != null) {    // MONSTER. If there is an errorMessage in the response 
+        break                                  // object, it means that all Monsters are already dead.
+    }
+
+    attacker = GET("/attacker")             // You can check which creature is the attacker now.
+
+    target_ids = attacker.type == PLAYER    // When the attacker creature is of type PLAYER, it should 
+        ? GET("/queue/monsters")            // attack monsters, if it's of type MONSTER, it should 
+        : GET("/queue/players")             // attack players. There is of course a friendly fire here
+                                            // implemented, so you can randomize it to create infights 
+    target_id = choose_from(target_ids)     // i.e. But you cannot attack yourself.
+
+    POST("/play/choose_target/{target_id}") // Query the play controller to choose the desired target for the current 
+                                            // playing attacker. 
+
+    defender = GET("/defender")             // You can check which creature is the defender (the target) now.    
+
+    attack_result = POST("/play/attack")    // Roll for attack for the attacker and for defence for the defender. After  
+    defence_result = POST("/play/defend")   // that you can check the results in the state controller.
+    attack_result = GET("/attack/result")
+    defence_result = GET("/defence/result")
+
+    damage_result = POST("/play/deal_damage")   // Roll for dealing damage. If the attacker rolled a higher result for 
+                                                // attack than the defender for the defence, the damage is dealt. The 
+                                                // other way around, the result is always 0. 
+}
+
+
+
+```
