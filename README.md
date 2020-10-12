@@ -535,12 +535,11 @@ for (card_id : monster_cards) {                     // Roll for the initiative f
     POST("/play/player/{card_id}/roll/initiative")  // currently layed on the table (in play)
 }
 
-while (true) {
+while ( GET("/queue/monsters").size() > 0 ) {
 
-    next_player = GET("/play/next")            // Get next creature to play. It may be of type PLAYER or 
-    if (next_player.errorMessage != null) {    // MONSTER. If there is an errorMessage in the response 
-        break                                  // object, it means that all Monsters are already dead.
-    }
+    next_player = GET("/play/next")         // Get next creature to play. It may be of type PLAYER or 
+                                            // MONSTER. If there is an errorMessage in the response 
+                                            // object, it means that all Monsters are already dead.    
 
     attacker = GET("/attacker")             // You can check which creature is the attacker now.
 
