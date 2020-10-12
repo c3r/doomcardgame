@@ -3,7 +3,7 @@
 ## Introduction
 This is a simple PoC tool for designing a card game based (more or less) on Id Software's Doom (classic) mechanics. 
 The app itself is maven based project made with Spring Boot. The purpose of this is to provide a "card game" engine
-and an easy communication via HTTP API.
+and an easy communication via HTTP API. See [example game scenario in pseudocode](#example-game-scenario-in-pseudocode).
 
 ### Basic idea
 The idea behind the engine is to provide a rich HTTP API for reading the actual game state which is internally represented
