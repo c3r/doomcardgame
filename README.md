@@ -510,10 +510,10 @@ Example response:
 
 ### Example game scenario in pseudocode
 
-```
+```python
 player1_cards = POST("/deal/playercards/1")         // Deal P1, P2 and Puppetmasters cards
-player2_cards = POST("/deal/playercards/1")             
-puppetmaster_cards = POST("/deal/playercards/1") 
+player2_cards = POST("/deal/playercards/2")             
+puppetmaster_cards = POST("/deal/puppetmaster") 
        
 player1_cards = GET("/player/1/cards")              // Query the state controller for both players cards and the 
 player2_cards = GET("/player/2/cards")              // puppetmasters cards
