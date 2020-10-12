@@ -515,54 +515,59 @@ player1_cards = POST("/deal/playercards/1")         // Deal P1, P2 and Puppetmas
 player2_cards = POST("/deal/playercards/2")             
 puppetmaster_cards = POST("/deal/puppetmaster") 
        
-player1_cards = GET("/player/1/cards")              // Query the state controller for both players cards and the 
-player2_cards = GET("/player/2/cards")              // puppetmasters cards
+player1_cards = GET("/player/1/cards")              // Query the state controller for both players  
+player2_cards = GET("/player/2/cards")              // cards and the puppetmasters cards
 puppetmaster_cards = GET("/puppetmaster/cards")         
 
-location_card = POST("/deal/locationcard")          // Deal the location card on the table. After you deal the  
-location_card = GET("/locationcard")                // location card, you can check it by querying the state 
-                                                    // controller
+location_card = POST("/deal/locationcard")          // Deal the location card on the table. After   
+location_card = GET("/locationcard")                // you deal the location card, you can check it 
+                                                    //  by querying the state controller
 
-monster_cards_ids = choose_from(puppetmaster_cards)         // After dealing the location card, Puppetmaster can play 
-POST("/play/puppetmaster/monstercards", monster_cards_ids)  // some monster cards from his hand. After you play the 
-monster_cards = GET("/monstercards")                        // monster cards, you can check them by querying the state 
+monster_cards_ids = choose_from(puppetmaster_cards)         // After dealing the location card,  
+POST("/play/puppetmaster/monstercards", monster_cards_ids)  // Puppetmaster can play some monster  
+monster_cards = GET("/monstercards")                        // cards from his hand. After you play  
+                                                            // the monster cards, you can check 
+                                                            // them by querying the state 
                                                             // controller
 
-p1_initiative = POST("/play/player/1/roll/initiative")  // Roll for initiative for both player 1 and player 2
-p2_initiative = POST("/play/player/2/roll/initiative")
+p1_initiative = POST("/play/player/1/roll/initiative")  // Roll for initiative for both player 1 
+p2_initiative = POST("/play/player/2/roll/initiative")  // and player 2
 
-for (card_id : monster_cards) {                     // Roll for the initiative for all the monster cards that are
-    POST("/play/player/{card_id}/roll/initiative")  // currently layed on the table (in play)
-}
+for (card_id : monster_cards) {                     // Roll for the initiative for all the 
+    POST("/play/player/{card_id}/roll/initiative")  // monster cards that are currently layed on 
+}                                                   // the table (in play)
 
 while ( GET("/queue/monsters").size() > 0 ) { // We play until all monsters are killed
 
-    next_player = GET("/play/next")         // Get next creature to play. It may be of type PLAYER or 
-                                            // MONSTER. The play queue is constructed according to initiative
-                                            // results from the initiative rolling loop. And it's accessed in
-                                            // a circular manner.
+    next_player = GET("/play/next")         // Get next creature to play. It may be of type PLAYER 
+                                            // or MONSTER. The play queue is constructed according  
+                                            // to initiative results from the initiative rolling 
+                                            // loop. And it's accessed in a circular manner.
                         
     attacker = GET("/attacker")             // You can check which creature is the attacker now.
 
-    target_ids = attacker.type == PLAYER    // When the attacker creature is of type PLAYER, it should 
-        ? GET("/queue/monsters")            // attack monsters, if it's of type MONSTER, it should 
-        : GET("/queue/players")             // attack players. There is of course a friendly fire here
-                                            // implemented, so you can randomize it to create infights 
-    target_id = choose_from(target_ids)     // i.e. But you cannot attack yourself.
+    target_ids = attacker.type == PLAYER    // When the attacker creature is of type PLAYER, it  
+        ? GET("/queue/monsters")            // should attack monsters, if it's of type MONSTER, 
+        : GET("/queue/players")             // it should  attack players. There is of course a 
+                                            // friendly fire here implemented, so you can 
+    target_id = choose_from(target_ids)     // randomize it to create infights  i.e. But you 
+                                            // cannot attack yourself.
 
-    POST("/play/choose_target/{target_id}") // Query the play controller to choose the desired target for the current 
-                                            // playing attacker. 
+    POST("/play/choose_target/{target_id}") // Query the play controller to choose the desired  
+                                            // target for the current playing attacker. 
 
-    defender = GET("/defender")             // You can check which creature is the defender (the target) now.    
+    defender = GET("/defender")             // You can check which creature is the defender     
+                                            // (the target) now.
 
-    attack_result = POST("/play/attack")    // Roll for attack for the attacker and for defence for the defender. After  
-    defence_result = POST("/play/defend")   // that you can check the results in the state controller.
-    attack_result = GET("/attack/result")
+    attack_result = POST("/play/attack")    // Roll for attack for the attacker and for defence   
+    defence_result = POST("/play/defend")   // for the defender. After that you can check the 
+    attack_result = GET("/attack/result")   // results in the state controller.
     defence_result = GET("/defence/result")
 
-    damage_result = POST("/play/deal_damage")   // Roll for dealing damage. If the attacker rolled a higher result for 
-                                                // attack than the defender for the defence, the damage is dealt. The 
-                                                // other way around, the result is always 0. 
+    damage_result = POST("/play/deal_damage")   // Roll for dealing damage. If the attacker  
+                                                // rolled a higher result for attack than the  
+                                                // defender for the defence, the damage is dealt.  
+                                                // The other way around, the result is always 0. 
 }
 
 
