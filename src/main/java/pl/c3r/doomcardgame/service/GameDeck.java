@@ -3,8 +3,8 @@ package pl.c3r.doomcardgame.service;
 import lombok.Builder;
 import lombok.Data;
 import org.springframework.stereotype.Component;
-import pl.c3r.doomcardgame.model.card.Card;
 import pl.c3r.doomcardgame.model.Deck;
+import pl.c3r.doomcardgame.model.card.Card;
 import pl.c3r.doomcardgame.model.card.ItemCard;
 import pl.c3r.doomcardgame.model.card.LocationCard;
 import pl.c3r.doomcardgame.model.card.MonsterCard;
@@ -17,7 +17,8 @@ import java.util.stream.Stream;
 
 @Component
 @Data
-public class GameDeck {
+public class GameDeck
+{
 
     private final Deck<LocationCard> locationCards;
     private final Deck<MonsterCard> monsterCards;
@@ -26,7 +27,8 @@ public class GameDeck {
 
     @Data
     @Builder
-    public static class Monster {
+    public static class Monster
+    {
         Integer baseInitiative;
         Integer hp;
         Integer cost;
@@ -35,35 +37,38 @@ public class GameDeck {
 
     @Data
     @Builder
-    public static class Item {
+    public static class Item
+    {
         Integer cost;
         String name;
     }
 
     @Data
     @Builder
-    public static class Location {
+    public static class Location
+    {
         String name;
     }
 
-    private static Monster       imp = Monster.builder().baseInitiative(1).cost(1).hp(10).name("Imp").build();
+    private static Monster imp = Monster.builder().baseInitiative(1).cost(1).hp(10).name("Imp").build();
     private static Monster cacodemon = Monster.builder().baseInitiative(2).cost(2).hp(20).name("Cacodemon").build();
-    private static Monster     baron = Monster.builder().baseInitiative(3).cost(3).hp(30).name("Baron").build();
-    private static Monster  lostSoul = Monster.builder().baseInitiative(4).cost(4).hp(40).name("Lost soul").build();
+    private static Monster baron = Monster.builder().baseInitiative(3).cost(3).hp(30).name("Baron").build();
+    private static Monster lostSoul = Monster.builder().baseInitiative(4).cost(4).hp(40).name("Lost soul").build();
 
     private static Location r1 = Location.builder().name("Room_01").build();
     private static Location r2 = Location.builder().name("Room_02").build();
     private static Location r3 = Location.builder().name("Room_03").build();
     private static Location r4 = Location.builder().name("Room_04").build();
 
-    private static Item         shield = Item.builder().cost(1).name("Shield").build();
+    private static Item shield = Item.builder().cost(1).name("Shield").build();
     private static Item rocketLauncher = Item.builder().cost(2).name("Rocket launcher").build();
-    private static Item         pistol = Item.builder().cost(3).name("Pistol").build();
-    private static Item   superShotgun = Item.builder().cost(4).name("Super shotgun").build();
-    private static Item        shotgun = Item.builder().cost(5).name("Shotgun").build();
-    private static Item         medkit = Item.builder().cost(6).name("Medkit").build();
+    private static Item pistol = Item.builder().cost(3).name("Pistol").build();
+    private static Item superShotgun = Item.builder().cost(4).name("Super shotgun").build();
+    private static Item shotgun = Item.builder().cost(5).name("Shotgun").build();
+    private static Item medkit = Item.builder().cost(6).name("Medkit").build();
 
-    public GameDeck() {
+    public GameDeck()
+    {
 
         locationCards = new Deck<>("Locations", Stream.of(
                 LocationCard.builder().id(100).location(r1).build(),
@@ -136,7 +141,8 @@ public class GameDeck {
         savedCards = new HashSet<>();
     }
 
-    public void shuffle() {
+    public void shuffle()
+    {
         this.locationCards.initDeck();
         this.monsterCards.initDeck();
         this.itemCards.initDeck();
@@ -144,24 +150,21 @@ public class GameDeck {
 
     // Dealing service --------------------
 
-    public Card dealNextLocationCard() {
-        if (!locationCards.areThereCardsToPlay()) {
-            // no location cards...
-        }
+    public Card dealNextLocationCard()
+    {
+        // TODO: if (locationCards.areThereNoCardsToPlay())
         return locationCards.dealNextCard();
     }
 
-    public Card dealNextItemCard() {
-        if (!locationCards.areThereCardsToPlay()) {
-            // no location cards...
-        }
+    public Card dealNextItemCard()
+    {
+        // TODO: if (itemCards.areThereNoCardsToPlay())
         return itemCards.dealNextCard();
     }
 
-    public Card dealNextMonsterCard() {
-        if (!locationCards.areThereCardsToPlay()) {
-            // no location cards...
-        }
+    public Card dealNextMonsterCard()
+    {
+        // TODO: if (monsterCards.areThereNoCardsToPlay())
         return monsterCards.dealNextCard();
     }
 }

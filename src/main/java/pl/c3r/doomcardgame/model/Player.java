@@ -1,6 +1,5 @@
 package pl.c3r.doomcardgame.model;
 
-import lombok.val;
 import pl.c3r.doomcardgame.model.card.Card;
 import pl.c3r.doomcardgame.service.exception.DGStateException;
 import pl.c3r.doomcardgame.util.Constants;
@@ -10,7 +9,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class Player implements Creature {
+public class Player implements Creature
+{
 
     protected final Integer id;
     protected final String name;
@@ -19,7 +19,8 @@ public class Player implements Creature {
     protected final Integer baseInitiative;
     private final Integer baseDamage;
 
-    public Player(Integer id, String name) {
+    public Player(Integer id, String name)
+    {
         this.id = id;
         this.hand = new HashMap<>();
         this.name = name;
@@ -28,37 +29,44 @@ public class Player implements Creature {
         this.baseInitiative = Constants.PLAYERS_BASE_INITIATIVE;
     }
 
-    public Set<Card> getHand() {
+    public Set<Card> getHand()
+    {
         return new HashSet<>(hand.values());
     }
 
-    public Integer getInitiative() {
+    public Integer getInitiative()
+    {
         return state.getInitiative();
     }
 
     @Override
-    public String getName() {
+    public String getName()
+    {
         return name;
     }
 
-    public void addCard(Card card) {
+    public void addCard(Card card)
+    {
         checkForMaxCards();
         hand.put(card.getId(), card);
     }
 
-    protected void removeCard(Integer cardId) {
+    protected void removeCard(final Integer cardId)
+    {
         checkForCard(cardId);
         hand.remove(cardId);
     }
 
-    protected void checkForMaxCards() {
-        val max = Constants.MAX_CARDS_FOR_PLAYER;
+    protected void checkForMaxCards()
+    {
+        var max = Constants.MAX_CARDS_FOR_PLAYER;
         if (hand.size() > max) {
             throw new DGStateException("This player cannot have more than {0} cards!", max);
         }
     }
 
-    protected void checkForCard(Integer cardId) {
+    protected void checkForCard(final Integer cardId)
+    {
         if (hand.isEmpty()) {
             throw new DGStateException("Players {0} hand is empty!", id);
         }
@@ -69,37 +77,44 @@ public class Player implements Creature {
     }
 
     @Override
-    public Integer getId() {
+    public Integer getId()
+    {
         return id;
     }
 
     @Override
-    public CreatureType getType() {
+    public CreatureType getType()
+    {
         return CreatureType.PLAYER;
     }
 
     @Override
-    public Integer getTarget() {
+    public Integer getTarget()
+    {
         return state.getTargetedCreatureId();
     }
 
     @Override
-    public boolean isDead() {
-        return !state.isAlive();
+    public boolean isDead()
+    {
+        return state.isDead();
     }
 
     @Override
-    public void setTarget(Integer targetId) {
+    public void setTarget(Integer targetId)
+    {
         this.state.setTargetedCreatureId(targetId);
     }
 
     @Override
-    public void setInitiativeBonus(Integer bonus) {
+    public void setInitiativeBonus(Integer bonus)
+    {
         state.setInitiative(baseInitiative + bonus);
     }
 
     @Override
-    public void useItem(Integer itemId) {
+    public void useItem(Integer itemId)
+    {
         if (!hand.containsKey(itemId)) {
             throw new DGStateException("Player {0} doesn't have item with id={1}", this, itemId);
         }
@@ -107,41 +122,49 @@ public class Player implements Creature {
     }
 
     @Override
-    public void setAttack(Integer attack) {
+    public void setAttack(Integer attack)
+    {
         state.setAttack(attack);
     }
 
     @Override
-    public void setDefence(Integer defence) {
+    public void setDefence(Integer defence)
+    {
         state.setDefence(defence);
     }
 
     @Override
-    public Integer getAttack() {
+    public Integer getAttack()
+    {
         return state.getAttack();
     }
 
     @Override
-    public Integer getDefence() {
+    public Integer getDefence()
+    {
         return state.getDefence();
     }
 
     @Override
-    public void dealDamage(Integer damage) {
+    public void dealDamage(Integer damage)
+    {
 
     }
 
     @Override
-    public boolean is(CreatureType type) {
+    public boolean is(CreatureType type)
+    {
         return type.equals(CreatureType.PLAYER);
     }
 
-    public boolean hasCards() {
+    public boolean hasCards()
+    {
         return !this.hand.isEmpty();
     }
 
     @Override
-    public String toString() {
+    public String toString()
+    {
         return String.format("%s (%d)", getName(), getId());
     }
 }

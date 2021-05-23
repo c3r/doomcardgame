@@ -6,7 +6,8 @@ import pl.c3r.doomcardgame.service.GameDeck;
 
 @Data
 @Builder
-public class LocationCard implements Card {
+public class LocationCard implements Card
+{
     private GameDeck.Location location;
     private Integer id;
 }

@@ -1,6 +1,5 @@
 package pl.c3r.doomcardgame.util;
 
-import lombok.val;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -24,11 +23,13 @@ import pl.c3r.doomcardgame.service.exception.DGStateException;
  * 4.f - dealing damage, goto 4.a with next monster/player in line
  */
 @Component
-public class DoomFSM {
+public class DoomFSM
+{
 
     private final Logger log = LoggerFactory.getLogger(DoomFSM.class);
 
-    public enum State {
+    public enum State
+    {
         INIT,
         DEAL_TO_PLAYERS,
         DEAL_LOCATION,
@@ -36,7 +37,7 @@ public class DoomFSM {
         ROLL_DICE_FOR_INITIATIVE,
         ATTACKER_CHOOSE_TARGET,
         ATT_USE_ITEMS,
-//        DEF_USE_ITEMS, TODO: Dont know yet if we want to have this
+        //        DEF_USE_ITEMS, ŃTODO: Dont know yet if we want to have this
         ATTACK_ROLL,
         DEFENCE_ROLL,
         DAMAGE_ROLL;
@@ -57,46 +58,55 @@ public class DoomFSM {
 
         private State next;
 
-        public void setNextState(State next) {
+        public void setNextState(State next)
+        {
             this.next = next;
         }
 
-        public State getNextState() {
+        public State getNextState()
+        {
             return this.next;
         }
     }
 
     private State state;
 
-    public DoomFSM() {
+    public DoomFSM()
+    {
         reset();
     }
 
-    public void reset() {
+    public void reset()
+    {
         this.state = State.INIT;
     }
 
-    public void proceed() {
+    public void proceed()
+    {
         State previous = state;
         state = state.getNextState();
-//        log.debug("State changed from {} to {}", previous.name(), state.name());
+        log.debug("State changed from {} to {}", previous.name(), state.name());
     }
 
-    public State getCurrentState() {
+    public State getCurrentState()
+    {
         return state;
     }
 
-    public boolean isAtLeastAt(State expectedState) {
-        val currentState = getCurrentState();
+    public boolean isAtLeastAt(final State expectedState)
+    {
+        var currentState = getCurrentState();
         return expectedState.ordinal() <= currentState.ordinal();
     }
 
-    public boolean isAt(State expectedState) {
-        val currentState = getCurrentState();
-        return expectedState.equals(currentState);
+    public boolean isNotAt(final State expectedState)
+    {
+        var currentState = getCurrentState();
+        return !expectedState.equals(currentState);
     }
 
-    public void checkForCurrentState(State expectedState) {
+    public void checkForCurrentState(final State expectedState)
+    {
         if (!getCurrentState().equals(expectedState)) {
             State currentState = getCurrentState();
             throw new DGStateException("Expected state was {0}. It''s {1}", expectedState, currentState);

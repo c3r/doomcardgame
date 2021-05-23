@@ -5,7 +5,8 @@ import lombok.Data;
 
 @Builder
 @Data
-public class ResponseDTO {
+public class ResponseDTO
+{
     String errorCode;
     String errorMessage;
     String returnCode;

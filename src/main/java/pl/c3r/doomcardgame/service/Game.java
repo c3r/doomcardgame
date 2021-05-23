@@ -1,22 +1,23 @@
 package pl.c3r.doomcardgame.service;
 
-import lombok.val;
-import lombok.var;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import pl.c3r.doomcardgame.model.Creature;
+import pl.c3r.doomcardgame.model.Player;
+import pl.c3r.doomcardgame.model.Puppetmaster;
+import pl.c3r.doomcardgame.model.card.Card;
 import pl.c3r.doomcardgame.model.card.MonsterCard;
 import pl.c3r.doomcardgame.service.exception.DGStateException;
 import pl.c3r.doomcardgame.util.Constants;
 import pl.c3r.doomcardgame.util.DoomFSM;
-import pl.c3r.doomcardgame.model.Creature;
-import pl.c3r.doomcardgame.model.card.Card;
-import pl.c3r.doomcardgame.model.Player;
-import pl.c3r.doomcardgame.model.Puppetmaster;
 
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static pl.c3r.doomcardgame.model.Creature.CreatureType.MONSTER;
@@ -24,8 +25,8 @@ import static pl.c3r.doomcardgame.model.Creature.CreatureType.PLAYER;
 import static pl.c3r.doomcardgame.util.DoomFSM.State.*;
 
 @Component
-public class Game {
-
+public class Game
+{
     private final Logger log = LoggerFactory.getLogger(Game.class);
     private final PlayQueue playQueue;
 
@@ -43,7 +44,8 @@ public class Game {
     private final DoomFSM stateMachine;
 
     @Autowired
-    public Game(GameDeck gameDeck, DoomFSM stateMachine, Dice dice) {
+    public Game(GameDeck gameDeck, DoomFSM stateMachine, Dice dice)
+    {
         this.gameDeck = gameDeck;
         this.stateMachine = stateMachine;
         this.dice = dice;
@@ -51,13 +53,14 @@ public class Game {
         resetGame();
     }
 
-    public void resetGame() {
+    public void resetGame()
+    {
         log.debug("Game is being restarted...");
 
         log.debug("Initializing players...");
         players = new HashMap<>();
-        val p1 = new Player(1, "PLAYER1");
-        val p2 = new Player(2, "PLAYER2");
+        var p1 = new Player(1, "PLAYER1");
+        var p2 = new Player(2, "PLAYER2");
         players.put(p1.getId(), p1);
         players.put(p2.getId(), p2);
 
@@ -73,16 +76,19 @@ public class Game {
 
     }
 
-    public Set<Card> getPlayersCards(Integer playerId) {
-        val player = getPlayer(playerId);
+    public Set<Card> getPlayersCards(final Integer playerId)
+    {
+        var player = getPlayer(playerId);
         return player.getHand();
     }
 
-    public Set<Card> getPuppetmasterHand() {
+    public Set<Card> getPuppetmasterHand()
+    {
         return puppetmaster.getHand();
     }
 
-    public void playMonsterCards(Set<Integer> monsterCardIds) {
+    public void playMonsterCards(final Set<Integer> monsterCardIds)
+    {
         log.debug(MessageFormat.format("Puppetmaster requested to play following monster cards: {0}", monsterCardIds));
         for (Integer id : monsterCardIds) {
             puppetmaster.playMonsterCard(id);
@@ -91,95 +97,104 @@ public class Game {
         log.debug(MessageFormat.format("Monstercards {0} played", monsterCardIds));
         playQueue.addCreatures(players.values());
 
-        val playedMonsters = getPlayedMonsters();
+        var playedMonsters = getPlayedMonsters();
         playQueue.addCreatures(playedMonsters);
 
         stateMachine.proceed();
     }
 
-    public Set<MonsterCard> getPlayedMonsters() {
-        val playedMonsters = puppetmaster.getPlayedMonsters();
-        val monsterCards = gameDeck.getMonsterCards();
+    public Set<MonsterCard> getPlayedMonsters()
+    {
+        var playedMonsters = puppetmaster.getPlayedMonsters();
+        var monsterCards = gameDeck.getMonsterCards();
         return monsterCards.getCardsWithIds(playedMonsters);
     }
 
-    public void checkForMinState(DoomFSM.State expectedState) {
+    public void checkForMinState(final DoomFSM.State expectedState)
+    {
         if (stateMachine.isAtLeastAt(expectedState)) {
             return;
         }
-        val currentState = stateMachine.getCurrentState();
+        var currentState = stateMachine.getCurrentState();
         throw new DGStateException("Expected state was at least {0}. It''s {1}", expectedState.name(), currentState.name());
     }
 
-    public void dealCardsForPlayer(Integer playerId) {
+    public void dealCardsForPlayer(final Integer playerId)
+    {
         stateMachine.checkForCurrentState(DEAL_TO_PLAYERS);
-        val player = getPlayer(playerId);
+        var player = getPlayer(playerId);
         if (player.hasCards()) {
             throw new DGStateException("Player {0} already has been dealt cards!", playerId);
         }
 
         for (int i = 0; i < Constants.MAX_CARDS_FOR_PLAYER; i++) {
-            val card = gameDeck.dealNextItemCard();
+            var card = gameDeck.dealNextItemCard();
             log.debug("Card {} dealt to player {}", card, player);
             player.addCard(card);
         }
 
-        if (!stateMachine.isAt(DEAL_TO_PLAYERS) || this.everybodyHasCards()) {
+        if (stateMachine.isNotAt(DEAL_TO_PLAYERS) || this.everybodyHasCards()) {
             stateMachine.proceed();
         }
     }
 
-    private Player getPlayer(Integer playerId) {
-        val player = players.get(playerId);
+    private Player getPlayer(final Integer playerId)
+    {
+        var player = players.get(playerId);
         if (player == null) {
             throw new DGStateException("Player {0} not found!", playerId);
         }
         return player;
     }
 
-    public void dealMonsterCards() {
+    public void dealMonsterCards()
+    {
         stateMachine.checkForCurrentState(DEAL_TO_PLAYERS);
         for (int i = 0; i < Constants.MAX_CARDS_FOR_PUPPETMASTER; i++) {
-            val card = gameDeck.dealNextMonsterCard();
+            var card = gameDeck.dealNextMonsterCard();
             log.debug("Card {} dealt to player {}", card, puppetmaster);
             puppetmaster.addCard(card);
         }
-        if (!stateMachine.isAt(DEAL_TO_PLAYERS) || this.everybodyHasCards()) {
+        if (stateMachine.isNotAt(DEAL_TO_PLAYERS) || this.everybodyHasCards()) {
             stateMachine.proceed();
         }
     }
 
-    public Card getPlayedLocationCard() {
+    public Card getPlayedLocationCard()
+    {
         if (currentLocationCard == null) {
             throw new DGStateException("No location card was played yet!");
         }
         return currentLocationCard;
     }
 
-    public void dealLocationCard() {
+    public void dealLocationCard()
+    {
         stateMachine.checkForCurrentState(DoomFSM.State.DEAL_LOCATION);
         currentLocationCard = gameDeck.dealNextLocationCard();
         log.debug("Location card dealt {}", currentLocationCard);
         stateMachine.proceed();
     }
 
-    private boolean everybodyHasCards() {
-        val isPlayerWithNoCards = this.players
+    private boolean everybodyHasCards()
+    {
+        var isPlayerWithNoCards = this.players
                 .values()
                 .stream()
                 .anyMatch(player -> player.getHand() == null || player.getHand().isEmpty());
 
-        val isPuppetmasterWithoutCards = this.puppetmaster.getHand() == null || this.puppetmaster.getHand().isEmpty();
-        val isAnyoneWithoutCards = isPlayerWithNoCards || isPuppetmasterWithoutCards;
+        var isPuppetmasterWithoutCards = this.puppetmaster.getHand() == null || this.puppetmaster.getHand().isEmpty();
+        var isAnyoneWithoutCards = isPlayerWithNoCards || isPuppetmasterWithoutCards;
         log.debug("Checking if there is anyone without cards... {}", isAnyoneWithoutCards);
         return !isAnyoneWithoutCards;
     }
 
-    public Integer initiativeForCreature(Integer creatureId) {
+    public Integer initiativeForCreature(final Integer creatureId)
+    {
         stateMachine.checkForCurrentState(DoomFSM.State.ROLL_DICE_FOR_INITIATIVE);
 
-        val creature = playQueue.getCreature(creatureId);
-        val rolledBonus = dice.get6k();
+        var creature = playQueue.getCreature(creatureId);
+        var rolledBonus = dice.get6k();
         creature.setInitiativeBonus(rolledBonus);
         playQueue.enqueue(creature);
 
@@ -197,7 +212,8 @@ public class Game {
         return creature.getInitiative();
     }
 
-    public Integer getNextCreatureToPlay() {
+    public Integer getNextCreatureToPlay()
+    {
         stateMachine.isAtLeastAt(ATTACKER_CHOOSE_TARGET);
         if (currentAttacker != null) {
             throw new DGStateException("Creature {0} is still playing!", currentAttacker);
@@ -209,7 +225,8 @@ public class Game {
         return nextCreature.getId();
     }
 
-    public void chooseTarget(Integer targetId) {
+    public void chooseTarget(final Integer targetId)
+    {
         stateMachine.checkForCurrentState(ATTACKER_CHOOSE_TARGET);
         checkForAttacker();
 
@@ -231,29 +248,32 @@ public class Game {
         stateMachine.proceed();
     }
 
-    public Integer attack() {
+    public Integer attack()
+    {
         stateMachine.checkForCurrentState(ATTACK_ROLL);
         checkForAttacker();
 
-        val attack = dice.get20k();
+        var attack = dice.get20k();
         currentAttacker.setAttack(attack);
         log.debug("{} rolls {} for attack", currentAttacker, attack);
         stateMachine.proceed();
         return attack;
     }
 
-    public Integer defend() {
+    public Integer defend()
+    {
         stateMachine.checkForCurrentState(DEFENCE_ROLL);
         checkForDefender();
 
-        val defence = dice.get20k();
+        var defence = dice.get20k();
         currentDefender.setDefence(defence);
         log.debug("{} rolls {} for defence", currentDefender, defence);
         stateMachine.proceed();
         return defence;
     }
 
-    public Integer dealDamage() {
+    public Integer dealDamage()
+    {
         stateMachine.checkForCurrentState(DAMAGE_ROLL);
         checkForAttacker();
         checkForDefender();
@@ -285,36 +305,43 @@ public class Game {
     }
 
     // TODO: extract GameState var?
-    public Creature getCurrentAttacker() {
+    public Creature getCurrentAttacker()
+    {
         checkForAttacker();
         return currentAttacker;
     }
 
-    private void checkForDefender() {
+    private void checkForDefender()
+    {
         if (currentDefender == null) {
             throw new DGStateException("Nobody is being attacked yet!");
         }
     }
 
-    private void checkForAttacker() {
+    private void checkForAttacker()
+    {
         if (currentAttacker == null) {
             throw new DGStateException("There is no current attacker assigned!");
         }
     }
 
-    public Creature getCurrentDefender() {
+    public Creature getCurrentDefender()
+    {
         checkForDefender();
         return currentDefender;
     }
 
-    public List<Integer> getCurrentPlayingMonsters() {
+    public List<Integer> getCurrentPlayingMonsters()
+    {
         return playQueue.getCurrentPlayingQueue()
                 .stream()
                 .filter(creature -> creature.is(MONSTER))
                 .map(Creature::getId)
                 .collect(Collectors.toList());
     }
-    public List<Integer> getCurrentPlayingPlayers() {
+
+    public List<Integer> getCurrentPlayingPlayers()
+    {
         return playQueue.getCurrentPlayingQueue()
                 .stream()
                 .filter(creature -> creature.is(PLAYER))

@@ -1,5 +1,6 @@
 package pl.c3r.doomcardgame.model.card;
 
-public interface Card {
+public interface Card
+{
     Integer getId();
 }

@@ -1,11 +1,10 @@
 package pl.c3r.doomcardgame.model;
 
-import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Data
-public class CreatureState {
+public class CreatureState
+{
     private Integer hitPoints;
     private Integer initiative;
     private Integer attack;
@@ -13,11 +12,13 @@ public class CreatureState {
     private Integer targetedCreatureId;
     private Integer usedItemId;
 
-    public CreatureState(Integer hitPoints) {
+    public CreatureState(Integer hitPoints)
+    {
         this.hitPoints = hitPoints;
     }
 
-    public boolean isAlive() {
-        return hitPoints > 0;
+    public boolean isDead()
+    {
+        return hitPoints <= 0;
     }
 }
