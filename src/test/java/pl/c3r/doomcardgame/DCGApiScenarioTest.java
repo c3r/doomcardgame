@@ -17,8 +17,8 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-class DoomcardgameApplicationTests {
-
+class DCGApiScenarioTest
+{
 	@LocalServerPort
 	private int port;
 
@@ -29,47 +29,47 @@ class DoomcardgameApplicationTests {
 	public void testGameScenario1() {
 
 		// Trying to check players cards before dealing them to them - should return error messages
-		String err = get("/state/puppetmaster/cards")
+		String err = get("/api/state/puppetmaster/cards")
 				.get("errorMessage")
 				.getAsString();
 
 		assertThat(err).isEqualTo("Expected state was at least DEAL_LOCATION. It's DEAL_TO_PLAYERS");
 
-		err = get("/state/player/1/cards")
+		err = get("/api/state/player/1/cards")
 				.get("errorMessage")
 				.getAsString();
 
 		assertThat(err).isEqualTo("Expected state was at least DEAL_LOCATION. It's DEAL_TO_PLAYERS");
 
-		err = get("/state/player/2/cards")
+		err = get("/api/state/player/2/cards")
 				.get("errorMessage")
 				.getAsString();
 
 		assertThat(err).isEqualTo("Expected state was at least DEAL_LOCATION. It's DEAL_TO_PLAYERS");
 
 		// deal cards
-		JsonArray player1CardsIds = post("/play/deal/playercards/1")
+		JsonArray player1CardsIds = post("/api/play/deal/playercards/1")
 				.get("responseEntity")
 				.getAsJsonArray();
 
-		JsonArray player2CardsIds = post("/play/deal/playercards/2")
+		JsonArray player2CardsIds = post("/api/play/deal/playercards/2")
 				.get("responseEntity")
 				.getAsJsonArray();
 
-		JsonArray pmCardsIds = post("/play/deal/puppetmaster")
+		JsonArray pmCardsIds = post("/api/play/deal/puppetmaster")
 				.get("responseEntity")
 				.getAsJsonArray();
 
 		// check cards
-		JsonArray player1Cards = get("/state/player/1/cards")
+		JsonArray player1Cards = get("/api/state/player/1/cards")
 				.get("responseEntity")
 				.getAsJsonArray();
 
-		JsonArray player2Cards = get("/state/player/2/cards")
+		JsonArray player2Cards = get("/api/state/player/2/cards")
 				.get("responseEntity")
 				.getAsJsonArray();
 
-		JsonArray pmCards = get("/state/puppetmaster/cards")
+		JsonArray pmCards = get("/api/state/puppetmaster/cards")
 				.get("responseEntity")
 				.getAsJsonArray();
 
@@ -92,19 +92,19 @@ class DoomcardgameApplicationTests {
 		}
 
 		// Trying to check location card before playing it - should return error message
-		err = get("/state/locationcard")
+		err = get("/api/state/locationcard")
 				.get("errorMessage")
 				.getAsString();
 
 		assertThat(err).isEqualTo("Expected state was at least PUPPETMASTER_PLAY_MONSTERS. It's DEAL_LOCATION");
 
 		// deal location card
-		String dealtLocationCard = post("/play/deal/locationcard")
+		String dealtLocationCard = post("/api/play/deal/locationcard")
 				.get("responseEntity")
 				.getAsString();
 
 		// check location card
-		String locationCardFromState = get("/state/locationcard")
+		String locationCardFromState = get("/api/state/locationcard")
 				.get("responseEntity")
 				.getAsJsonObject()
 				.get("id")
@@ -113,7 +113,7 @@ class DoomcardgameApplicationTests {
 		assertThat(locationCardFromState).isEqualTo(dealtLocationCard);
 
 		// Trying to check monstercards before playing monsters - should return error message
-		err = (get("/state/monstercards")).get("errorMessage").getAsString();
+		err = (get("/api/state/monstercards")).get("errorMessage").getAsString();
 		assertThat(err).isEqualTo("Expected state was at least ROLL_DICE_FOR_INITIATIVE. It's PUPPETMASTER_PLAY_MONSTERS");
 
 		// PM selects cards to play and play those cards
@@ -123,10 +123,10 @@ class DoomcardgameApplicationTests {
 				pmCardsIds.get(2).getAsString()
 		).collect(Collectors.toSet());
 
-		post("/play/puppetmaster/monstercards", selectedPuppetmasterCardsToPlay);
+		post("/api/play/puppetmaster/monstercards", selectedPuppetmasterCardsToPlay);
 
 		// Check if the played monster cards are equal to those that were requested to be played earlier
-		JsonArray playedMonsterCards = get("/state/monstercards")
+		JsonArray playedMonsterCards = get("/api/state/monstercards")
 				.get("responseEntity")
 				.getAsJsonArray();
 
@@ -137,7 +137,7 @@ class DoomcardgameApplicationTests {
 		}
 
 		// Check if current puppetmaster cards does not contain any of already played monster cards and
-		pmCards = get("/state/puppetmaster/cards")
+		pmCards = get("/api/state/puppetmaster/cards")
 				.get("responseEntity")
 				.getAsJsonArray();
 
@@ -147,11 +147,11 @@ class DoomcardgameApplicationTests {
 		}
 
 		// Roll for initiative
-		JsonObject player1Initiative = post("/play/player/1/roll/initiative");
-		JsonObject player2Initiative = post("/play/player/2/roll/initiative");
+		JsonObject player1Initiative = post("/api/play/player/1/roll/initiative");
+		JsonObject player2Initiative = post("/api/play/player/2/roll/initiative");
 
 		for (String monsterCardId : selectedPuppetmasterCardsToPlay) {
-			JsonObject monsterInitiative = post(String.format("/play/player/%s/roll/initiative", monsterCardId));
+			JsonObject monsterInitiative = post(String.format("/api/play/player/%s/roll/initiative", monsterCardId));
 		}
 
 		// Check queue
@@ -159,7 +159,7 @@ class DoomcardgameApplicationTests {
 
 		do {
 
-			JsonObject nextPlayerResponse = get("/play/next");
+			JsonObject nextPlayerResponse = get("/api/play/next");
 			errorMessage = nextPlayerResponse.get("errorMessage");
 
 			if (!errorMessage.equals(JsonNull.INSTANCE)) {
@@ -171,19 +171,19 @@ class DoomcardgameApplicationTests {
 					.getAsString();
 
 			// Check if the result of /attacker state controller value is the same as the playing creature id
-			JsonObject attackerCreature = get("/state/attacker").get("responseEntity").getAsJsonObject();
+			JsonObject attackerCreature = get("/api/state/attacker").get("responseEntity").getAsJsonObject();
 			String attackerId = attackerCreature.get("id").getAsString();
 			assertThat(attackerId).isEqualTo(nextCreatureToPlayId);
 
 			// When trying to attack yourself, should get an exception message
-			err = post(MessageFormat.format("/play/choose_target/{0}", nextCreatureToPlayId))
+			err = post(MessageFormat.format("/api/play/choose_target/{0}", nextCreatureToPlayId))
 					.get("errorMessage")
 					.getAsString();
 
 			assertThat(err).isEqualTo("You can't attack yourself!");
 
 			// When trying to attack a non existent creature, should get an exception message
-			err = post("/play/choose_target/999")
+			err = post("/api/play/choose_target/999")
 					.get("errorMessage")
 					.getAsString();
 
@@ -193,14 +193,16 @@ class DoomcardgameApplicationTests {
 			String type = attackerCreature.get("type").getAsString();
 
 			JsonArray targets = type.equals("PLAYER")
-					? get("/state/queue/monsters").get("responseEntity").getAsJsonArray()
-					: get("/state/queue/players").get("responseEntity").getAsJsonArray();
+					? get("/api/state/queue/monsters").get("responseEntity").getAsJsonArray()
+					: get("/api/state/queue/players").get("responseEntity").getAsJsonArray();
 
 			String targetId = targets.getAsJsonArray()
 					.get(new Random().nextInt(targets.size()))
+					.getAsJsonObject()
+					.get("id")
 					.getAsString();
 
-			String message = post(MessageFormat.format("/play/choose_target/{0}", targetId))
+			String message = post(MessageFormat.format("/api/play/choose_target/{0}", targetId))
 					.get("responseEntity")
 					.getAsJsonObject()
 					.get("message")
@@ -209,7 +211,7 @@ class DoomcardgameApplicationTests {
 			assertThat(message).isEqualTo("TargetId chosen successfully");
 
 			// Check the defender
-			String defenderId = get("/state/defender")
+			String defenderId = get("/api/state/defender")
 					.get("responseEntity")
 					.getAsJsonObject()
 					.get("id")
@@ -218,31 +220,31 @@ class DoomcardgameApplicationTests {
 			assertThat(defenderId).isEqualTo(targetId);
 
 			// Roll for attack
-			String attackResult = post("/play/attack")
+			String attackResult = post("/api/play/attack")
 					.get("responseEntity")
 					.getAsString();
 
 			// Check if the attack state online is the same as returned earlier
-			String attackResultFromState = get("/state/attack/result")
+			String attackResultFromState = get("/api/state/attack/result")
 					.get("responseEntity")
 					.getAsString();
 
 			assertThat(attackResultFromState).isEqualTo(attackResult);
 
 			// Roll for defence
-			String defenceResult = post("/play/defend")
+			String defenceResult = post("/api/play/defend")
 					.get("responseEntity")
 					.getAsString();
 
 			// Check if the defence state online is the same as returned earlier
-			String defenceResultFromState = get("/state/defence/result")
+			String defenceResultFromState = get("/api/state/defence/result")
 					.get("responseEntity")
 					.getAsString();
 
 			assertThat(defenceResultFromState).isEqualTo(defenceResult);
 
 			// Deal damage
-			String damageResult = post("/play/deal_damage")
+			String damageResult = post("/api/play/deal_damage")
 					.get("responseEntity")
 					.getAsString();
 

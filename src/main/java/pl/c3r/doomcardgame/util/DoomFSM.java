@@ -2,8 +2,9 @@ package pl.c3r.doomcardgame.util;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import pl.c3r.doomcardgame.service.exception.DGStateException;
+import pl.c3r.doomcardgame.service.exception.DCGStateException;
 
 /**
  * 1 - INIT
@@ -36,8 +37,6 @@ public class DoomFSM
         PUPPETMASTER_PLAY_MONSTERS,
         ROLL_DICE_FOR_INITIATIVE,
         ATTACKER_CHOOSE_TARGET,
-        ATT_USE_ITEMS,
-        //        DEF_USE_ITEMS, ŃTODO: Dont know yet if we want to have this
         ATTACK_ROLL,
         DEFENCE_ROLL,
         DAMAGE_ROLL;
@@ -49,8 +48,6 @@ public class DoomFSM
             State.PUPPETMASTER_PLAY_MONSTERS.setNextState(State.ROLL_DICE_FOR_INITIATIVE);
             State.ROLL_DICE_FOR_INITIATIVE.setNextState(State.ATTACKER_CHOOSE_TARGET);
             State.ATTACKER_CHOOSE_TARGET.setNextState(State.ATTACK_ROLL);
-            //State.ATT_USE_ITEMS.setNextState(State.ATTACK_ROLL);
-//            State.DEF_USE_ITEMS.setNextState(State.ATT_ROLL);
             State.ATTACK_ROLL.setNextState(State.DEFENCE_ROLL);
             State.DEFENCE_ROLL.setNextState(State.DAMAGE_ROLL);
             State.DAMAGE_ROLL.setNextState(ATTACKER_CHOOSE_TARGET);
@@ -71,8 +68,12 @@ public class DoomFSM
 
     private State state;
 
-    public DoomFSM()
+    private final MessageLog messageLog;
+
+    @Autowired
+    public DoomFSM(MessageLog messageLog)
     {
+        this.messageLog = messageLog;
         reset();
     }
 
@@ -85,7 +86,7 @@ public class DoomFSM
     {
         State previous = state;
         state = state.getNextState();
-        log.debug("State changed from {} to {}", previous.name(), state.name());
+        messageLog.debug(log, "State changed from {} to {}", previous.name(), state.name());
     }
 
     public State getCurrentState()
@@ -109,7 +110,7 @@ public class DoomFSM
     {
         if (!getCurrentState().equals(expectedState)) {
             State currentState = getCurrentState();
-            throw new DGStateException("Expected state was {0}. It''s {1}", expectedState, currentState);
+            throw new DCGStateException("Expected state was {0}. It''s {1}", expectedState, currentState);
         }
     }
 }

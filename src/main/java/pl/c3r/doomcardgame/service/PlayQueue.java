@@ -1,7 +1,7 @@
 package pl.c3r.doomcardgame.service;
 
 import pl.c3r.doomcardgame.model.Creature;
-import pl.c3r.doomcardgame.service.exception.DGInternalException;
+import pl.c3r.doomcardgame.service.exception.DCGInternalException;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -38,7 +38,7 @@ public class PlayQueue
     public Creature getNextCreature()
     {
         if (playQueue.isEmpty()) {
-            throw new DGInternalException("Playing queue is empty!");
+            throw new DCGInternalException("Playing queue is empty!");
         }
         // Access the playing queue array in a circular way
         Creature creature = playQueue.get(roundNumber % playQueue.size());
@@ -54,7 +54,7 @@ public class PlayQueue
     void enqueue(Creature creature)
     {
         if (playQueue.contains(creature)) {
-            throw new DGInternalException("Creature {0} already enqueued!", creature.getId());
+            throw new DCGInternalException("Creature {0} already enqueued!", creature.getId());
         }
         notEnqueuedYet.remove(creature.getId());
 
@@ -80,12 +80,12 @@ public class PlayQueue
     public void removeCreature(Integer creatureId)
     {
         if (!creaturesCache.containsKey(creatureId)) {
-            throw new DGInternalException("Creature with id={0} not playing!", creatureId);
+            throw new DCGInternalException("Creature with id={0} not playing!", creatureId);
         }
 
         Creature creature = creaturesCache.remove(creatureId);
         if (!playQueue.contains(creature)) {
-            throw new DGInternalException("Creature {0} not in playing queue!", creature);
+            throw new DCGInternalException("Creature {0} not in playing queue!", creature);
         }
         playQueue.remove(creature);
     }
@@ -102,6 +102,10 @@ public class PlayQueue
     public List<Creature> getCurrentPlayingQueue()
     {
         return playQueue;
+    }
+
+    public Collection<Creature> getAllPlayingCreatures() {
+        return creaturesCache.values();
     }
 
     private String formatCreature(Creature elem)

@@ -5,7 +5,7 @@ import lombok.Data;
 import pl.c3r.doomcardgame.model.Creature;
 import pl.c3r.doomcardgame.model.CreatureState;
 import pl.c3r.doomcardgame.service.GameDeck;
-import pl.c3r.doomcardgame.service.exception.DGStateException;
+import pl.c3r.doomcardgame.service.exception.DCGStateException;
 
 @Data
 public class MonsterCard implements Card, Creature
@@ -33,6 +33,12 @@ public class MonsterCard implements Card, Creature
     public Integer getInitiative()
     {
         return state.getInitiative();
+    }
+
+    @Override
+    public Integer getHp()
+    {
+        return state.getHitPoints();
     }
 
     @Override
@@ -75,7 +81,7 @@ public class MonsterCard implements Card, Creature
     @Override
     public void useItem(Integer itemId)
     {
-        throw new DGStateException("Not supported");
+        throw new DCGStateException("Not supported");
     }
 
     @Override

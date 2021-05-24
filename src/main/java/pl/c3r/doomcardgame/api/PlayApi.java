@@ -1,4 +1,4 @@
-package pl.c3r.doomcardgame.controllers;
+package pl.c3r.doomcardgame.api;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -6,9 +6,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import pl.c3r.doomcardgame.model.Creature;
 import pl.c3r.doomcardgame.model.card.Card;
 import pl.c3r.doomcardgame.service.Game;
-import pl.c3r.doomcardgame.service.exception.DGStateException;
+import pl.c3r.doomcardgame.service.exception.DCGStateException;
 
 import java.text.MessageFormat;
 import java.util.Set;
@@ -16,33 +17,33 @@ import java.util.stream.Collectors;
 
 // TODO: divide into: reset & others, DealController, PlayController
 @RestController
-public class PlayController
+@RequestMapping("/api/play")
+public class PlayApi
 {
-
-    private final Logger log = LoggerFactory.getLogger(PlayController.class);
+    private final Logger log = LoggerFactory.getLogger(PlayApi.class);
     private final Game game;
     private final ResponseBuilder responseBuilder;
 
     @Autowired
-    public PlayController(Game game, ResponseBuilder responseBuilder)
+    public PlayApi(Game game, ResponseBuilder responseBuilder)
     {
         this.game = game;
         this.responseBuilder = responseBuilder;
     }
 
-    @GetMapping("/play/reset")
+    @GetMapping("/reset")
     public ResponseEntity<ResponseDTO> resetGame()
     {
         game.resetGame();
         return responseBuilder.buildResponse("Game restarted.", HttpStatus.OK);
     }
 
-    @PostMapping("/play/deal/playercards/{id}")
+    @PostMapping("/deal/playercards/{id}")
     public ResponseEntity<ResponseDTO> dealItemCardsForPlayer(@PathVariable("id") Integer playerId)
     {
         game.dealCardsForPlayer(playerId);
 
-        var playersCardsIds = game.getPlayersCards(playerId)
+        var playersCardsIds = game.getPlayersCardsOnHand(playerId)
                 .stream()
                 .map(Card::getId)
                 .collect(Collectors.toSet());
@@ -50,12 +51,12 @@ public class PlayController
         return responseBuilder.buildResponse(playersCardsIds, HttpStatus.OK);
     }
 
-    @PostMapping("/play/deal/puppetmaster")
+    @PostMapping("/deal/puppetmaster")
     public ResponseEntity<ResponseDTO> dealMonsterCardsForPuppetmaster()
     {
-        game.dealMonsterCards();
+        game.dealCardsForPuppetmaster();
 
-        var puppetmastersCardsIds = game.getPuppetmasterHand()
+        var puppetmastersCardsIds = game.getPuppetmastersCardsOnHand()
                 .stream()
                 .map(Card::getId)
                 .collect(Collectors.toSet());
@@ -63,7 +64,7 @@ public class PlayController
         return responseBuilder.buildResponse(puppetmastersCardsIds, HttpStatus.OK);
     }
 
-    @PostMapping("/play/deal/locationcard")
+    @PostMapping("/deal/locationcard")
     public ResponseEntity<ResponseDTO> dealLocationCard()
     {
         game.dealLocationCard();
@@ -71,27 +72,27 @@ public class PlayController
         return responseBuilder.buildResponse(locationCardId, HttpStatus.OK);
     }
 
-    @PostMapping("/play/puppetmaster/monstercards")
+    @PostMapping("/puppetmaster/monstercards")
     public ResponseEntity<ResponseDTO> puppetmasterPlayMonsterCards(@RequestBody Set<Integer> monsterCardsIds)
     {
         if (monsterCardsIds == null || monsterCardsIds.isEmpty()) {
-            throw new DGStateException("Monster cards are empty!");
+            throw new DCGStateException("Requested monster card list is empty!");
         }
         game.playMonsterCards(monsterCardsIds);
         return responseBuilder.buildResponse("Monster Cards played by Puppetmaster successfully", HttpStatus.OK);
     }
 
-    @PostMapping("/play/player/{id}/roll/initiative")
+    @PostMapping("/player/{id}/roll/initiative")
     public ResponseEntity<ResponseDTO> playerInitiativeRoll(@PathVariable("id") Integer playerId)
     {
-        Integer initiative = game.initiativeForCreature(playerId);
+        Integer initiative = game.rollInitiativeForCreature(playerId);
         return responseBuilder.buildResponse(initiative, HttpStatus.OK);
     }
 
-    @PostMapping("/play/monster/{id}/roll/initiative")
+    @PostMapping("/monster/{id}/roll/initiative")
     public ResponseEntity<ResponseDTO> monsterInitiativeRoll(@PathVariable("id") Integer monsterId)
     {
-        Integer initiative = game.initiativeForCreature(monsterId);
+        Integer initiative = game.rollInitiativeForCreature(monsterId);
         return responseBuilder.buildResponse(initiative, HttpStatus.OK);
     }
 
@@ -101,14 +102,15 @@ public class PlayController
      *
      * @return id of the next playing creature.
      */
-    @GetMapping("/play/next")
+    @GetMapping("/next")
     public ResponseEntity<ResponseDTO> getNextCreatureToPlay()
     {
-        Integer id = game.getNextCreatureToPlay();
+        Creature nextCreature = game.goToNextCreature();
+        Integer id = nextCreature.getId();
         return responseBuilder.buildResponse(id, HttpStatus.OK);
     }
 
-    @PostMapping("/play/choose_target/{targetId}")
+    @PostMapping("/choose_target/{targetId}")
     public ResponseEntity<ResponseDTO> chooseTarget(@PathVariable("targetId") Integer targetId)
     {
         game.chooseTarget(targetId);
@@ -121,21 +123,21 @@ public class PlayController
         return responseBuilder.buildResponse(dto, HttpStatus.OK);
     }
 
-    @PostMapping("/play/attack")
+    @PostMapping("/attack")
     public ResponseEntity<ResponseDTO> attack()
     {
         Integer attack = game.attack();
         return responseBuilder.buildResponse(attack, HttpStatus.OK);
     }
 
-    @PostMapping("/play/defend")
+    @PostMapping("/defend")
     public ResponseEntity<ResponseDTO> defend()
     {
         Integer defend = game.defend();
         return responseBuilder.buildResponse(defend, HttpStatus.OK);
     }
 
-    @PostMapping("/play/deal_damage")
+    @PostMapping("/deal_damage")
     public ResponseEntity<ResponseDTO> dealDamage()
     {
         Integer damage = game.dealDamage();
@@ -152,8 +154,8 @@ public class PlayController
         return responseBuilder.buildErrorResponse(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    @ExceptionHandler({DGStateException.class})
-    protected ResponseEntity<ResponseDTO> handleException(DGStateException ex)
+    @ExceptionHandler({DCGStateException.class})
+    protected ResponseEntity<ResponseDTO> handleException(DCGStateException ex)
     {
         log.warn(ex.getMessage());
         return responseBuilder.buildErrorResponse(ex.getMessage(), HttpStatus.BAD_REQUEST);

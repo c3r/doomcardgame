@@ -1,7 +1,7 @@
 package pl.c3r.doomcardgame.model;
 
 import pl.c3r.doomcardgame.model.card.Card;
-import pl.c3r.doomcardgame.service.exception.DGStateException;
+import pl.c3r.doomcardgame.service.exception.DCGStateException;
 import pl.c3r.doomcardgame.util.Constants;
 
 import java.util.HashMap;
@@ -11,7 +11,6 @@ import java.util.Set;
 
 public class Player implements Creature
 {
-
     protected final Integer id;
     protected final String name;
     protected final CreatureState state;
@@ -40,6 +39,12 @@ public class Player implements Creature
     }
 
     @Override
+    public Integer getHp()
+    {
+        return state.getHitPoints();
+    }
+
+    @Override
     public String getName()
     {
         return name;
@@ -61,18 +66,18 @@ public class Player implements Creature
     {
         var max = Constants.MAX_CARDS_FOR_PLAYER;
         if (hand.size() > max) {
-            throw new DGStateException("This player cannot have more than {0} cards!", max);
+            throw new DCGStateException("This player cannot have more than {0} cards!", max);
         }
     }
 
     protected void checkForCard(final Integer cardId)
     {
         if (hand.isEmpty()) {
-            throw new DGStateException("Players {0} hand is empty!", id);
+            throw new DCGStateException("Players {0} hand is empty!", id);
         }
 
         if (!hand.containsKey(cardId)) {
-            throw new DGStateException("Player {0} does not have card with id={1}", this, cardId);
+            throw new DCGStateException("Player {0} does not have card with id={1}", this, cardId);
         }
     }
 
@@ -116,7 +121,7 @@ public class Player implements Creature
     public void useItem(Integer itemId)
     {
         if (!hand.containsKey(itemId)) {
-            throw new DGStateException("Player {0} doesn't have item with id={1}", this, itemId);
+            throw new DCGStateException("Player {0} doesn't have item with id={1}", this, itemId);
         }
         state.setUsedItemId(itemId);
     }
@@ -148,7 +153,7 @@ public class Player implements Creature
     @Override
     public void dealDamage(Integer damage)
     {
-
+        state.setHitPoints(state.getHitPoints() - damage);
     }
 
     @Override

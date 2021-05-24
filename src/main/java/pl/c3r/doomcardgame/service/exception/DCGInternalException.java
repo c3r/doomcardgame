@@ -2,14 +2,14 @@ package pl.c3r.doomcardgame.service.exception;
 
 import java.text.MessageFormat;
 
-public class DGInternalException extends RuntimeException
+public class DCGInternalException extends RuntimeException
 {
-    public DGInternalException(String message)
+    public DCGInternalException(String message)
     {
         super(message);
     }
 
-    public DGInternalException(String message, Object... args)
+    public DCGInternalException(String message, Object... args)
     {
         super(MessageFormat.format(message, args));
     }

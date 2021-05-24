@@ -1,6 +1,6 @@
 package pl.c3r.doomcardgame.model;
 
-import pl.c3r.doomcardgame.service.exception.DGStateException;
+import pl.c3r.doomcardgame.service.exception.DCGStateException;
 import pl.c3r.doomcardgame.util.Constants;
 
 import java.util.HashSet;
@@ -21,7 +21,7 @@ public class Puppetmaster extends Player
     {
         var max = Constants.MAX_CARDS_FOR_PUPPETMASTER;
         if (hand.size() > max) {
-            throw new DGStateException("This player cannot have more than {0} cards!", max);
+            throw new DCGStateException("This player cannot have more than {0} cards!", max);
         }
     }
 
@@ -34,7 +34,7 @@ public class Puppetmaster extends Player
     public void killMonster(final Integer monsterId)
     {
         if (!this.playedMonsters.contains(monsterId)) {
-            throw new DGStateException("Puppetmaster doesn't played monster with id={0}", monsterId);
+            throw new DCGStateException("Puppetmaster doesn't played monster with id={0}", monsterId);
         }
         this.playedMonsters.remove(monsterId);
     }

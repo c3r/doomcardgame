@@ -1,4 +1,4 @@
-package pl.c3r.doomcardgame.controllers;
+package pl.c3r.doomcardgame.api;
 
 import lombok.Builder;
 import lombok.Data;

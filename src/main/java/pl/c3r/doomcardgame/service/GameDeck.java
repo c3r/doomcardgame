@@ -50,22 +50,22 @@ public class GameDeck
         String name;
     }
 
-    private static Monster imp = Monster.builder().baseInitiative(1).cost(1).hp(10).name("Imp").build();
-    private static Monster cacodemon = Monster.builder().baseInitiative(2).cost(2).hp(20).name("Cacodemon").build();
-    private static Monster baron = Monster.builder().baseInitiative(3).cost(3).hp(30).name("Baron").build();
-    private static Monster lostSoul = Monster.builder().baseInitiative(4).cost(4).hp(40).name("Lost soul").build();
+    private static Monster imp = Monster.builder().baseInitiative(1).cost(1).hp(10).name("ZOMBI").build();
+    private static Monster cacodemon = Monster.builder().baseInitiative(2).cost(2).hp(20).name("CACOD").build();
+    private static Monster baron = Monster.builder().baseInitiative(3).cost(3).hp(30).name("BARON").build();
+    private static Monster lostSoul = Monster.builder().baseInitiative(4).cost(4).hp(40).name("LSOUL").build();
 
-    private static Location r1 = Location.builder().name("Room_01").build();
-    private static Location r2 = Location.builder().name("Room_02").build();
-    private static Location r3 = Location.builder().name("Room_03").build();
-    private static Location r4 = Location.builder().name("Room_04").build();
+    private static Location r1 = Location.builder().name("ROOM1").build();
+    private static Location r2 = Location.builder().name("ROOM2").build();
+    private static Location r3 = Location.builder().name("ROOM3").build();
+    private static Location r4 = Location.builder().name("ROOM4").build();
 
-    private static Item shield = Item.builder().cost(1).name("Shield").build();
-    private static Item rocketLauncher = Item.builder().cost(2).name("Rocket launcher").build();
-    private static Item pistol = Item.builder().cost(3).name("Pistol").build();
-    private static Item superShotgun = Item.builder().cost(4).name("Super shotgun").build();
-    private static Item shotgun = Item.builder().cost(5).name("Shotgun").build();
-    private static Item medkit = Item.builder().cost(6).name("Medkit").build();
+    private static Item armor = Item.builder().cost(1).name("ARMOR").build();
+    private static Item rocketLauncher = Item.builder().cost(2).name("RLAUN").build();
+    private static Item pistol = Item.builder().cost(3).name("PISTO").build();
+    private static Item superShotgun = Item.builder().cost(4).name("SSHOT").build();
+    private static Item shotgun = Item.builder().cost(5).name("SHOTG").build();
+    private static Item medkit = Item.builder().cost(6).name("MEDIK").build();
 
     public GameDeck()
     {
@@ -115,8 +115,8 @@ public class GameDeck
         ).collect(Collectors.toMap(MonsterCard::getId, Function.identity())));
 
         itemCards = new Deck<>("Items", Stream.of(
-                ItemCard.builder().id(600).item(shield).build(),
-                ItemCard.builder().id(601).item(shield).build(),
+                ItemCard.builder().id(600).item(armor).build(),
+                ItemCard.builder().id(601).item(armor).build(),
                 ItemCard.builder().id(602).item(medkit).build(),
                 ItemCard.builder().id(603).item(medkit).build(),
                 ItemCard.builder().id(604).item(medkit).build(),
@@ -150,10 +150,10 @@ public class GameDeck
 
     // Dealing service --------------------
 
-    public Card dealNextLocationCard()
+    public LocationCard dealNextLocationCard()
     {
         // TODO: if (locationCards.areThereNoCardsToPlay())
-        return locationCards.dealNextCard();
+        return (LocationCard) locationCards.dealNextCard();
     }
 
     public Card dealNextItemCard()

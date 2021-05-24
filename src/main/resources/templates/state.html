@@ -1,0 +1,361 @@
+<!DOCTYPE HTML>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Getting Started: Serving Web Content</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <style>
+        body {
+            background: black;
+            color: limegreen;
+            font-family: 'Consolas', monospace;
+            font-size: 12px;
+        }
+
+        table {
+            border-collapse: collapse;
+            border: 1px solid darkslategrey;
+        }
+
+        td.header {
+            background-color: #003300;
+        }
+
+        .table td, .table tr, .table th {
+            border: 1px solid darkslategrey;
+            border-width: 1px;
+            padding: 0px 3px;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        .table tr th {
+            border-bottom: 1px solid darkslategrey;
+        }
+
+        div.box {
+            display: table;
+            margin: 5px 0px 5px 5px;
+        }
+
+        div.column {
+            float: left;
+        }
+
+        div.box > div.header {
+            background-color: #222222;
+            padding: 5px;
+            border: 1px solid darkslategrey;
+        }
+
+        div.box > div.content {
+            border: 1px solid darkslategrey;
+            border-top: none;
+            padding: 5px;
+        }
+
+        div.log {
+            clear: both;
+            display: block;
+            font-size: 9px;
+            line-height: 0em;
+            color: #FFF;
+            padding: 10px;
+        }
+
+    </style>
+</head>
+<body>
+
+<div th:if="${isError}">
+    <h2 th:text="'Error: ' + ${error}"/>
+</div>
+<div class="column">
+    <div class="box">
+        <div class="header">
+            Puppetmaster's hand
+        </div>
+        <div class="content">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>NAM</th>
+                    <th>TYP</th>
+                    <th>INT</th>
+                    <th>HP</th>
+                    <th>DED</th>
+                    <th>ATK</th>
+                    <th>DEF</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="c : ${PuppetmastersCardsOnHand}">
+                    <td th:text="${c.getId()}"></td>
+                    <td th:text="${c.getName()}"></td>
+                    <td th:text="${c.getType()}"></td>
+                    <td th:text="${c.getInitiative()}"></td>
+                    <td th:text="${c.getHp()}"></td>
+                    <td th:text="${c.isDead()}"></td>
+                    <td th:text="${c.getAttack()}"></td>
+                    <td th:text="${c.getDefence()}"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="box">
+        <div class="header">
+            Current playing players
+        </div>
+        <div class="content">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>NAM</th>
+                    <th>TYP</th>
+                    <th>INT</th>
+                    <th>HP</th>
+                    <th>DED</th>
+                    <th>ATK</th>
+                    <th>DEF</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="c : ${CurrentPlayingPlayers}">
+                    <td th:text="${c.getId()}"></td>
+                    <td th:text="${c.getName()}"></td>
+                    <td th:text="${c.getType()}"></td>
+                    <td th:text="${c.getInitiative()}"></td>
+                    <td th:text="${c.getHp()}"></td>
+                    <td th:text="${c.isDead()}"></td>
+                    <td th:text="${c.getAttack()}"></td>
+                    <td th:text="${c.getDefence()}"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="box">
+        <div class="header">
+            Current playing monsters
+        </div>
+        <div class="content">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>NAM</th>
+                    <th>TYP</th>
+                    <th>INT</th>
+                    <th>HP</th>
+                    <th>DED</th>
+                    <th>ATK</th>
+                    <th>DEF</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="c : ${CurrentPlayingMonsters}">
+                    <td th:text="${c.getId()}"></td>
+                    <td th:text="${c.getName()}"></td>
+                    <td th:text="${c.getType()}"></td>
+                    <td th:text="${c.getInitiative()}"></td>
+                    <td th:text="${c.getHp()}"></td>
+                    <td th:text="${c.isDead()}"></td>
+                    <td th:text="${c.getAttack()}"></td>
+                    <td th:text="${c.getDefence()}"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="column">
+    <div class="box">
+        <div class="header" style="background-color: #550000">
+            Current attacker
+        </div>
+        <div class="content">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>NAM</th>
+                    <th>TYP</th>
+                    <th>INT</th>
+                    <th>HP</th>
+                    <th>DED</th>
+                    <th>ATK</th>
+                    <th>DEF</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="c : ${CurrentAttacker}">
+                    <td th:text="${c.getId()}"></td>
+                    <td th:text="${c.getName()}"></td>
+                    <td th:text="${c.getType()}"></td>
+                    <td th:text="${c.getInitiative()}"></td>
+                    <td th:text="${c.getHp()}"></td>
+                    <td th:text="${c.isDead()}"></td>
+                    <td th:text="${c.getAttack()}"></td>
+                    <td th:text="${c.getDefence()}"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="box">
+        <div class="header" style="background-color: #000055">
+            Current defender
+        </div>
+        <div class="content">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>NAM</th>
+                    <th>TYP</th>
+                    <th>INT</th>
+                    <th>HP</th>
+                    <th>DED</th>
+                    <th>ATK</th>
+                    <th>DEF</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="c : ${CurrentDefender}">
+                    <td th:text="${c.getId()}"></td>
+                    <td th:text="${c.getName()}"></td>
+                    <td th:text="${c.getType()}"></td>
+                    <td th:text="${c.getInitiative()}"></td>
+                    <td th:text="${c.getHp()}"></td>
+                    <td th:text="${c.isDead()}"></td>
+                    <td th:text="${c.getAttack()}"></td>
+                    <td th:text="${c.getDefence()}"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="box">
+        <div class="header">
+            Last damage roll
+        </div>
+        <div class="content">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>DMG</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td th:text="${LastDamageRoll}">
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<div class="column">
+    <div class="box">
+        <div class="header">
+            Player 1's hand
+        </div>
+        <div class="content">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>NAM</th>
+                    <th>CST</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="c : ${Player1CardsOnHand}">
+                    <td th:text="${c.getId()}"></td>
+                    <td th:text="${c.getItem().getName()}"></td>
+                    <td th:text="${c.getItem().getCost()}"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="box">
+        <div class="header">
+            Player 2's hand
+        </div>
+        <div class="content">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>NAM</th>
+                    <th>CST</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="c : ${Player2CardsOnHand}">
+                    <td th:text="${c.getId()}"></td>
+                    <td th:text="${c.getItem().getName()}"></td>
+                    <td th:text="${c.getItem().getCost()}"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="box">
+        <div class="header">
+            Current location card
+        </div>
+        <div class="content">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>NAM</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="c : ${LocationCard}">
+                    <td th:text="${c.getId()}"></td>
+                    <td th:text="${c.getLocation().getName()}"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="box">
+        <div class="header">
+            Attributes
+        </div>
+        <div class="content">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>CUR</th>
+                    <th>NEX</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td th:text="${State}"></td>
+                    <td th:text="${NextState}"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<div th:if="${Messages}">
+    <div class="log">
+        <p th:each="i : ${#numbers.sequence(Messages.size() - 1, 0, -1)}" th:text="${Messages[i]}" />
+    </div>
+</div>
+
+
+
+
+</body>
+</html>

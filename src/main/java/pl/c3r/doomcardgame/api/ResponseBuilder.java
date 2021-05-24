@@ -1,4 +1,4 @@
-package pl.c3r.doomcardgame.controllers;
+package pl.c3r.doomcardgame.api;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

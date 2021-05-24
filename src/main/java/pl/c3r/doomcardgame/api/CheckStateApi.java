@@ -1,4 +1,4 @@
-package pl.c3r.doomcardgame.controllers;
+package pl.c3r.doomcardgame.api;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,9 +8,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pl.c3r.doomcardgame.model.Creature;
 import pl.c3r.doomcardgame.model.card.Card;
+import pl.c3r.doomcardgame.model.card.ItemCard;
 import pl.c3r.doomcardgame.model.card.MonsterCard;
 import pl.c3r.doomcardgame.service.Game;
-import pl.c3r.doomcardgame.service.exception.DGStateException;
+import pl.c3r.doomcardgame.service.exception.DCGStateException;
 import pl.c3r.doomcardgame.util.DoomFSM;
 
 import java.text.MessageFormat;
@@ -18,39 +19,39 @@ import java.util.List;
 import java.util.Set;
 
 @RestController
-public class CheckStateController
+@RequestMapping("/api/state")
+public class CheckStateApi
 {
-
-    private final Logger log = LoggerFactory.getLogger(CheckStateController.class);
+    private final Logger log = LoggerFactory.getLogger(CheckStateApi.class);
     private final Game game;
     private final ResponseBuilder responseBuilder;
 
     @Autowired
-    public CheckStateController(Game game, ResponseBuilder responseBuilder)
+    public CheckStateApi(Game game, ResponseBuilder responseBuilder)
     {
         this.game = game;
         this.responseBuilder = responseBuilder;
     }
 
-    @GetMapping("/state/puppetmaster/cards")
+    @GetMapping("/puppetmaster/cards")
     @ResponseBody
     public ResponseEntity<ResponseDTO> getPuppetMasterCards()
     {
         game.checkForMinState(DoomFSM.State.DEAL_LOCATION);
-        Set<Card> puppetmasterHand = game.getPuppetmasterHand();
+        Set<MonsterCard> puppetmasterHand = game.getPuppetmastersCardsOnHand();
         return responseBuilder.buildResponse(puppetmasterHand, HttpStatus.OK);
     }
 
-    @GetMapping("/state/player/{id}/cards")
+    @GetMapping("/player/{id}/cards")
     @ResponseBody
     public ResponseEntity<ResponseDTO> getPlayerCards(@PathVariable(name = "id") Integer playerId)
     {
         game.checkForMinState(DoomFSM.State.DEAL_LOCATION);
-        Set<Card> playersCards = game.getPlayersCards(playerId);
+        Set<ItemCard> playersCards = game.getPlayersCardsOnHand(playerId);
         return responseBuilder.buildResponse(playersCards, HttpStatus.OK);
     }
 
-    @GetMapping("/state/locationcard")
+    @GetMapping("/locationcard")
     @ResponseBody
     public ResponseEntity<ResponseDTO> getLocationCard()
     {
@@ -59,34 +60,34 @@ public class CheckStateController
         return responseBuilder.buildResponse(playedLocationCard, HttpStatus.OK);
     }
 
-    @GetMapping("/state/monstercards")
+    @GetMapping("/monstercards")
     @ResponseBody
     public ResponseEntity<ResponseDTO> getPlayedMonsterCards()
     {
         game.checkForMinState(DoomFSM.State.ROLL_DICE_FOR_INITIATIVE);
-        Set<MonsterCard> playedMonsters = game.getPlayedMonsters();
+        Set<MonsterCard> playedMonsters = game.getPlayedMonsterCards();
         return responseBuilder.buildResponse(playedMonsters, HttpStatus.OK);
     }
 
-    @GetMapping("/state/queue/monsters")
+    @GetMapping("/queue/monsters")
     @ResponseBody
     public ResponseEntity<ResponseDTO> getCurrentPlayingMonsters()
     {
         game.checkForMinState(DoomFSM.State.ROLL_DICE_FOR_INITIATIVE);
-        List<Integer> playingQueue = game.getCurrentPlayingMonsters();
+        Set<Creature> playingQueue = game.getCurrentPlayingMonsters();
         return responseBuilder.buildResponse(playingQueue, HttpStatus.OK);
     }
 
-    @GetMapping("/state/queue/players")
+    @GetMapping("/queue/players")
     @ResponseBody
     public ResponseEntity<ResponseDTO> getCurrentPlayingPlayers()
     {
         game.checkForMinState(DoomFSM.State.ROLL_DICE_FOR_INITIATIVE);
-        List<Integer> playingQueue = game.getCurrentPlayingPlayers();
+        Set<Creature> playingQueue = game.getCurrentPlayingPlayers();
         return responseBuilder.buildResponse(playingQueue, HttpStatus.OK);
     }
 
-    @GetMapping("/state/attacker")
+    @GetMapping("/attacker")
     @ResponseBody
     public ResponseEntity<ResponseDTO> getCurrentAttacker()
     {
@@ -95,7 +96,7 @@ public class CheckStateController
         return responseBuilder.buildResponse(attacker, HttpStatus.OK);
     }
 
-    @GetMapping("/state/defender")
+    @GetMapping("/defender")
     @ResponseBody
     public ResponseEntity<ResponseDTO> getCurrentDefender()
     {
@@ -104,7 +105,7 @@ public class CheckStateController
         return responseBuilder.buildResponse(defender, HttpStatus.OK);
     }
 
-    @GetMapping("/state/attack/result")
+    @GetMapping("/attack/result")
     @ResponseBody
     public ResponseEntity<ResponseDTO> getCurrentAttackResult()
     {
@@ -113,7 +114,7 @@ public class CheckStateController
         return responseBuilder.buildResponse(attackResult, HttpStatus.OK);
     }
 
-    @GetMapping("/state/defence/result")
+    @GetMapping("/defence/result")
     @ResponseBody
     public ResponseEntity<ResponseDTO> getCurrentDefenceResult()
     {
@@ -130,8 +131,8 @@ public class CheckStateController
         return responseBuilder.buildErrorResponse(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    @ExceptionHandler({DGStateException.class})
-    protected ResponseEntity<ResponseDTO> handleException(DGStateException ex)
+    @ExceptionHandler({DCGStateException.class})
+    protected ResponseEntity<ResponseDTO> handleException(DCGStateException ex)
     {
         log.warn(ex.getMessage());
         return responseBuilder.buildErrorResponse(ex.getMessage(), HttpStatus.BAD_REQUEST);
